@@ -12,7 +12,8 @@ namespace StandaloneOrganizr
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private const string FILENAME = "sao.mson";
+		private const string FILENAME = ".organizr";
+		private const string VERSION = "1.0";
 
 		private ProgramList plist = new ProgramList();
 
@@ -23,6 +24,8 @@ namespace StandaloneOrganizr
 			try
 			{
 				Init();
+
+				Title = "StandaloneOrganizr v" + VERSION + " (" + Path.GetFileName(Path.GetFullPath(".")) + ")";
 			}
 			catch (Exception e)
 			{
@@ -30,13 +33,13 @@ namespace StandaloneOrganizr
 			}
 		}
 
-		private void Init() //TODO Cache IO Errors
+		private void Init()
 		{
 			if (File.Exists(FILENAME))
 			{
 				string data = File.ReadAllText(FILENAME);
 
-				plist.Load(data); //TODO Cache IO Errors
+				plist.Load(data);
 			}
 			else
 			{
@@ -53,8 +56,6 @@ namespace StandaloneOrganizr
 			var removed = plist.programs
 				.Where(p => !directories.Any(q => Path.GetFileName(q).ToLower() == p.directory.ToLower()))
 				.ToList();
-
-			// TODO SHOW removed and missing 
 
 			if (missing.Count() > 0)
 			{
@@ -86,42 +87,58 @@ namespace StandaloneOrganizr
 
 		private void searchbox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
 		{
-			resultlist.Items.Clear();
-
 			if (searchbox.Text.StartsWith(":"))
 			{
-				string cmd = searchbox.Text.Trim(':').Trim().ToLower();
-
-				if (cmd == "e" || cmd == "empty")
-				{
-					foreach (var prog in plist.programs.Where(p => p.keywords.Count == 0))
-					{
-						resultlist.Items.Add(prog);
-					}
-				}
-				else if (cmd == "a" || cmd == "all")
-				{
-					foreach (var prog in plist.programs)
-					{
-						resultlist.Items.Add(prog);
-					}
-				}
-				else if (cmd == "n" || cmd == "new")
-				{
-					foreach (var prog in plist.programs.Where(p => p.newly))
-					{
-						resultlist.Items.Add(prog);
-					}
-				}
-
+				searchCommand();
 
 				return;
 			}
 
-			var results = plist.find(searchbox.Text);
+			searchText();
+		}
+
+		private void searchText()
+		{
+			resultlist.Items.Clear();
+
+			var searchwords = searchbox.Text.Split(' ').Select(p => p.Trim()).Where(p => p != "").ToList();
+
+			if (searchwords.Count == 0)
+				return;
+
+			var results = searchwords.Select(p => plist.find(p)).Aggregate((a, b) => a.Concat(b).ToList());
 			foreach (var result in results)
 			{
 				resultlist.Items.Add(result);
+			}
+		}
+
+		private void searchCommand()
+		{
+			resultlist.Items.Clear();
+
+			string cmd = searchbox.Text.Trim(':').Trim().ToLower();
+
+			if (cmd == "e" || cmd == "empty")
+			{
+				foreach (var prog in plist.programs.Where(p => p.keywords.Count == 0))
+				{
+					resultlist.Items.Add(prog);
+				}
+			}
+			else if (cmd == "a" || cmd == "all")
+			{
+				foreach (var prog in plist.programs)
+				{
+					resultlist.Items.Add(prog);
+				}
+			}
+			else if (cmd == "n" || cmd == "new")
+			{
+				foreach (var prog in plist.programs.Where(p => p.newly))
+				{
+					resultlist.Items.Add(prog);
+				}
 			}
 		}
 
@@ -150,6 +167,20 @@ namespace StandaloneOrganizr
 			}, sel);
 
 			window.ShowDialog();
+		}
+
+		private void MenuItem_Click(object sender, RoutedEventArgs e)
+		{
+			searchbox.Text = "";
+			searchbox_TextChanged(null, null);
+
+			plist.programs.Clear();
+			plist.Update(FILENAME);
+		}
+
+		private void Something_GotFocus(object sender, RoutedEventArgs e)
+		{
+			searchbox.SelectAll();
 		}
 	}
 }

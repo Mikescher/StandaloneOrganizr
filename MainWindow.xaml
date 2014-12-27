@@ -3,28 +3,43 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="StandaloneOrganizr" 
         Height="350" Width="525" 
-        WindowStartupLocation="CenterScreen" Icon="icon.ico">
+        WindowStartupLocation="CenterScreen" Icon="icon.ico" GotFocus="Something_GotFocus">
 
     <Grid FocusManager.FocusedElement="{Binding ElementName=searchbox}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
             <RowDefinition Height="40"/>
-            <RowDefinition Height="139*"/>
+            <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
 
+        <Menu Grid.Row="0" Grid.Column="0">
+            <MenuItem Header="File" Click="MenuItem_Click">
+                <MenuItem Header="Reset"/>
+            </MenuItem>
+            
+            <MenuItem Header="Edit">
+            </MenuItem>
+            
+            <MenuItem Header="Help">
+                <MenuItem Header="About ..."/>
+            </MenuItem>
+        </Menu>
 
         <TextBox x:Name="searchbox" 
-                 Grid.Row="0" Grid.Column="0" 
+                 Grid.Row="1" Grid.Column="0" 
                  Margin="2" 
                  TextChanged="searchbox_TextChanged" 
-                 FontSize="24" VerticalAlignment="Center"/>
+                 FontSize="24" VerticalAlignment="Center" GotFocus="Something_GotFocus"/>
         
         <ScrollViewer 
-        	Grid.Row="1" Grid.Column="0" 
+        	Grid.Row="2" Grid.Column="0" 
         	Margin="2" VerticalScrollBarVisibility="Auto">
 
             <ListBox x:Name="resultlist" 
         		MouseDoubleClick="resultlist_MouseDoubleClick"
-        		FontSize="24" Background="{x:Null}" BorderBrush="{x:Null}" Height="276" Width="513" MouseRightButtonUp="resultlist_MouseRightButtonUp"/>
+        		FontSize="24" Background="{x:Null}" BorderBrush="{x:Null}" 
+                MouseRightButtonUp="resultlist_MouseRightButtonUp" />
+
         </ScrollViewer>
     </Grid>
 </Window>
