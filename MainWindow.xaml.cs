@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
 
 namespace StandaloneOrganizr
@@ -25,11 +26,11 @@ namespace StandaloneOrganizr
 			{
 				Init();
 
-				Title = "StandaloneOrganizr v" + VERSION + " (" + Path.GetFileName(Path.GetFullPath(".")) + ")";
+				Title = "StandaloneOrganizr" + " v" + VERSION + " (" + Path.GetFileName(Path.GetFullPath(".")) + ")";
 			}
 			catch (Exception e)
 			{
-				MessageBox.Show(e.Message, e.GetType().Name, MessageBoxButton.OK, MessageBoxImage.Error);
+				MessageBox.Show(e.ToString(), e.GetType().FullName, MessageBoxButton.OK, MessageBoxImage.Error);
 			}
 		}
 
@@ -37,13 +38,9 @@ namespace StandaloneOrganizr
 		{
 			if (File.Exists(FILENAME))
 			{
-				string data = File.ReadAllText(FILENAME);
+				string data = File.ReadAllText(FILENAME, Encoding.UTF8);
 
 				plist.Load(data);
-			}
-			else
-			{
-				File.Create(FILENAME);
 			}
 
 			var directories = Directory.GetDirectories(".");

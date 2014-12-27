@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading;
 
 namespace StandaloneOrganizr
 {
@@ -52,7 +54,16 @@ namespace StandaloneOrganizr
 
 		public void Update(string fn)
 		{
-			File.WriteAllText(fn, Save());
+			try
+			{
+				File.WriteAllText(fn, Save(), Encoding.UTF8);
+			}
+			catch (IOException)
+			{
+				Thread.Sleep(500);
+
+				File.WriteAllText(fn, Save(), Encoding.UTF8);
+			}
 		}
 	}
 }
