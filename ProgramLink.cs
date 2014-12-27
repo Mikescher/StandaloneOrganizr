@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -11,6 +10,7 @@ namespace StandaloneOrganizr
 		public string name = "";
 		public string directory = "";
 		public List<string> keywords = new List<string>();
+		public bool newly = false;
 
 		public ProgramLink()
 		{
@@ -25,15 +25,15 @@ namespace StandaloneOrganizr
 		{
 			string[] lines = data.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
 			if (lines.Length != 2)
-				throw new IOException();
+				throw new Exception("Invalid db file syntax");
 
 			string[] head = lines[0].Split(':');
 			if (head.Length != 2)
-				throw new IOException();
+				throw new Exception("Invalid db file syntax");
 
 			name = head[0].Trim();
 			directory = Regex.Unescape(head[1].Trim().Trim('"'));
-			keywords = lines[1].Trim().Split(' ').ToList();
+			keywords = lines[1].Trim().Split(' ').Where(p => p.Trim() != "").ToList();
 		}
 
 		public string Save()
