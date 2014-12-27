@@ -1,8 +1,15 @@
 ﻿<Window x:Class="StandaloneOrganizr.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525">
+        Title="StandaloneOrganizr" Height="350" Width="525">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="139*"/>
+        </Grid.RowDefinitions>
+
+
+        <TextBox x:Name="searchbox" Grid.Row="0" Grid.Column="0" Margin="2" TextChanged="searchbox_TextChanged"/>
+        <ListBox x:Name="resultlist" Grid.Row="1" Grid.Column="0" Margin="2"/>
     </Grid>
 </Window>
