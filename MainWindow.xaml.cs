@@ -134,5 +134,22 @@ namespace StandaloneOrganizr
 
 			Process.Start("explorer.exe", Path.GetFullPath(sel.directory));
 		}
+
+		private void resultlist_MouseRightButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		{
+			var sel = resultlist.SelectedItem as ProgramLink;
+
+			if (sel == null)
+				return;
+
+			var window = new LinkEditWindow(() =>
+			{
+				plist.Update(FILENAME);
+				resultlist.Items.Refresh();
+				return 0;
+			}, sel);
+
+			window.ShowDialog();
+		}
 	}
 }

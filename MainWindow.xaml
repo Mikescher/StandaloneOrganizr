@@ -18,10 +18,13 @@
                  TextChanged="searchbox_TextChanged" 
                  FontSize="24" VerticalAlignment="Center"/>
         
-        <ListBox x:Name="resultlist" 
-                 Grid.Row="1" Grid.Column="0" 
-                 Margin="2" 
-                 MouseDoubleClick="resultlist_MouseDoubleClick"
-                 FontSize="24" Background="{x:Null}" BorderBrush="{x:Null}"/>
+        <ScrollViewer 
+        	Grid.Row="1" Grid.Column="0" 
+        	Margin="2" VerticalScrollBarVisibility="Auto">
+
+            <ListBox x:Name="resultlist" 
+        		MouseDoubleClick="resultlist_MouseDoubleClick"
+        		FontSize="24" Background="{x:Null}" BorderBrush="{x:Null}" Height="276" Width="513" MouseRightButtonUp="resultlist_MouseRightButtonUp"/>
+        </ScrollViewer>
     </Grid>
 </Window>
