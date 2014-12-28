@@ -40,7 +40,7 @@ namespace StandaloneOrganizr
 
 			directory = directory.Substring(1, directory.Length - 2);
 
-			keywords = lines[1].Trim().Split(' ').Where(p => p.Trim() != "").ToList();
+			keywords = lines[1].Trim().Split(' ').Where(p => p.Trim() != "").Select(p => p.ToLower()).Distinct().ToList();
 		}
 
 		public string Save()
@@ -94,8 +94,6 @@ namespace StandaloneOrganizr
 		public static string UnescapeStr(string value)
 		{
 			const char BACK_SLASH = '\\';
-			const char SLASH = '/';
-			const char DBL_QUOTE = '"';
 
 			var output = new StringBuilder(value.Length);
 			bool esc = false;
