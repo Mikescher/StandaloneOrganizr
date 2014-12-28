@@ -36,14 +36,10 @@ namespace StandaloneOrganizr
 			return string.Join(Environment.NewLine, programs.Select(p => p.Save()));
 		}
 
-		public List<ProgramLink> find(string search)
+		public List<SearchResult> find(string search)
 		{
-			if (search == "")
-				return new List<ProgramLink>();
-
 			return programs
-				.Where(p => p.Find(search) > 0)
-				.OrderByDescending(p => p.Find(search))
+				.Select(p => new SearchResult(p) { score = p.Find(search) })
 				.ToList();
 		}
 

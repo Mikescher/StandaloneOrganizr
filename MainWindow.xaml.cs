@@ -98,13 +98,26 @@ namespace StandaloneOrganizr
 		{
 			resultlist.Items.Clear();
 
-			var searchwords = searchbox.Text.Split(' ').Select(p => p.Trim()).Where(p => p != "").ToList();
+			var searchwords = searchbox.Text.Split(' ', '+', ',').Select(p => p.Trim()).Where(p => p != "").ToList();
 
 			if (searchwords.Count == 0)
 				return;
 
-			var results = searchwords.Select(p => plist.find(p)).Aggregate((a, b) => a.Concat(b).ToList());
-			foreach (var result in results)
+			var results = new List<SearchResult>();
+
+			foreach (var singleresultset in searchwords.Select(p => plist.find(p)).SelectMany(p => p))
+			{
+				if (results.Any(p => p.program.directory.ToLower() == singleresultset.program.directory.ToLower()))
+				{
+					results.First(p => p.program.directory.ToLower() == singleresultset.program.directory.ToLower()).score += singleresultset.score;
+				}
+				else
+				{
+					results.Add(singleresultset);
+				}
+			}
+
+			foreach (var result in results.Where(p => p.score > 0).OrderByDescending(p => p.score))
 			{
 				resultlist.Items.Add(result);
 			}
