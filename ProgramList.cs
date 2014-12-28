@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace StandaloneOrganizr
@@ -36,10 +37,17 @@ namespace StandaloneOrganizr
 			return string.Join(Environment.NewLine, programs.Select(p => p.Save()));
 		}
 
-		public List<SearchResult> find(string search)
+		public List<SearchResult> Find(string search)
 		{
 			return programs
 				.Select(p => new SearchResult(p) { score = p.Find(search) })
+				.ToList();
+		}
+
+		public List<SearchResult> Find(Regex regex)
+		{
+			return programs
+				.Select(p => new SearchResult(p) { score = p.Find(regex) })
 				.ToList();
 		}
 

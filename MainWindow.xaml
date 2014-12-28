@@ -13,15 +13,21 @@
         </Grid.RowDefinitions>
 
         <Menu Grid.Row="0" Grid.Column="0">
-            <MenuItem Header="File" Click="MenuItem_Click">
-                <MenuItem Header="Reset"/>
+            <MenuItem Header="File">
+                <MenuItem Header="Reset" Click="MenuItemReset_Click"/>
+                <MenuItem Header="Exit" Click="MenuItemExit_Click"/>
             </MenuItem>
-            
-            <MenuItem Header="Edit">
+
+            <MenuItem Header="Insert">
+                <MenuItem Header="All programs" Click="MenuItemInsertAll_Click"/>
+                <MenuItem Header="New programs" Click="MenuItemInsertNew_Click"/>
+                <MenuItem Header="Empty programs" Click="MenuItemInsertEmpty_Click"/>
+                <Separator HorizontalAlignment="Left" Width="190"/>
+                <MenuItem Header="Regular Expression" Click="MenuItemInsertRegex_Click"/>
             </MenuItem>
             
             <MenuItem Header="Help">
-                <MenuItem Header="About ..."/>
+                <MenuItem Header="About ..." Click="MenuItemAbout_Click"/>
             </MenuItem>
         </Menu>
 

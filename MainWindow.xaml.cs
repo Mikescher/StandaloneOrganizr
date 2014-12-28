@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 
 namespace StandaloneOrganizr
@@ -54,6 +55,26 @@ namespace StandaloneOrganizr
 				.Where(p => !directories.Any(q => Path.GetFileName(q).ToLower() == p.directory.ToLower()))
 				.ToList();
 
+			foreach (var rem in removed)
+			{
+				var result = MessageBox.Show("Program " + rem.name + " was removed.\r\nDo you want to delete it from the database ?", "Program removed", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+				switch (result)
+				{
+					case MessageBoxResult.Yes:
+						plist.programs.Remove(rem);
+						plist.Update(FILENAME);
+						break;
+					case MessageBoxResult.No:
+						break;
+					case MessageBoxResult.Cancel:
+					default:
+						Environment.Exit(-1);
+						return;
+				}
+
+			}
+
 			if (missing.Count() > 0)
 			{
 				foreach (var miss in missing)
@@ -87,11 +108,16 @@ namespace StandaloneOrganizr
 			if (searchbox.Text.StartsWith(":"))
 			{
 				searchCommand();
-
-				return;
+			}
+			else if (searchbox.Text.StartsWith("/"))
+			{
+				searchRegex();
+			}
+			else
+			{
+				searchText();
 			}
 
-			searchText();
 		}
 
 		private void searchText()
@@ -100,12 +126,49 @@ namespace StandaloneOrganizr
 
 			var searchwords = searchbox.Text.Split(' ', '+', ',').Select(p => p.Trim()).Where(p => p != "").ToList();
 
-			if (searchwords.Count == 0)
+			var results = new List<SearchResult>();
+
+			foreach (var singleresultset in searchwords.Select(p => plist.Find(p)).SelectMany(p => p))
+			{
+				if (results.Any(p => p.program.directory.ToLower() == singleresultset.program.directory.ToLower()))
+				{
+					results.First(p => p.program.directory.ToLower() == singleresultset.program.directory.ToLower()).score += singleresultset.score;
+				}
+				else
+				{
+					results.Add(singleresultset);
+				}
+			}
+
+			foreach (var result in results.Where(p => p.score > 0).OrderByDescending(p => p.score))
+			{
+				resultlist.Items.Add(result);
+			}
+		}
+
+		private void searchRegex()
+		{
+			resultlist.Items.Clear();
+
+			Regex regex;
+
+			try
+			{
+				string rextext = searchbox.Text.Substring(1);
+				if (rextext.EndsWith("/"))
+					rextext = rextext.Substring(0, rextext.Length - 1);
+				rextext = "^" + rextext + "$";
+
+				regex = new Regex(rextext, RegexOptions.IgnoreCase);
+			}
+			catch (ArgumentException)
+			{
 				return;
+			}
 
 			var results = new List<SearchResult>();
 
-			foreach (var singleresultset in searchwords.Select(p => plist.find(p)).SelectMany(p => p))
+			foreach (var singleresultset in plist.Find(regex))
 			{
 				if (results.Any(p => p.program.directory.ToLower() == singleresultset.program.directory.ToLower()))
 				{
@@ -179,7 +242,7 @@ namespace StandaloneOrganizr
 			window.ShowDialog();
 		}
 
-		private void MenuItem_Click(object sender, RoutedEventArgs e)
+		private void MenuItemReset_Click(object sender, RoutedEventArgs e)
 		{
 			searchbox.Text = "";
 			searchbox_TextChanged(null, null);
@@ -188,9 +251,43 @@ namespace StandaloneOrganizr
 			plist.Update(FILENAME);
 		}
 
+		private void MenuItemInsertAll_Click(object sender, RoutedEventArgs e)
+		{
+			searchbox.Text = ":all";
+			searchbox_TextChanged(null, null);
+		}
+
+		private void MenuItemInsertEmpty_Click(object sender, RoutedEventArgs e)
+		{
+			searchbox.Text = ":empty";
+			searchbox_TextChanged(null, null);
+		}
+
+		private void MenuItemInsertNew_Click(object sender, RoutedEventArgs e)
+		{
+			searchbox.Text = ":new";
+			searchbox_TextChanged(null, null);
+		}
+
+		private void MenuItemInsertRegex_Click(object sender, RoutedEventArgs e)
+		{
+			searchbox.Text = "/Regex/";
+			searchbox_TextChanged(null, null);
+		}
+
 		private void Something_GotFocus(object sender, RoutedEventArgs e)
 		{
 			searchbox.SelectAll();
+		}
+
+		private void MenuItemAbout_Click(object sender, RoutedEventArgs e)
+		{
+			MessageBox.Show("Standalone Organizr " + Environment.NewLine + "// by Mike Schwörer (2014)" + Environment.NewLine + "@ http://www.mikescher.de", "Standalone Organizr v" + VERSION);
+		}
+
+		private void MenuItemExit_Click(object sender, RoutedEventArgs e)
+		{
+			Close();
 		}
 	}
 }

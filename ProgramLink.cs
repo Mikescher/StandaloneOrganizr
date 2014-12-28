@@ -59,6 +59,17 @@ namespace StandaloneOrganizr
 			return 0;
 		}
 
+		public int Find(Regex regex)
+		{
+			if (regex.IsMatch(name))
+				return 2;
+
+			if (keywords.Any(p => regex.IsMatch(p)))
+				return 1;
+
+			return 0;
+		}
+
 		public static string EscapeStr(string value)
 		{
 			const char BACK_SLASH = '\\';
