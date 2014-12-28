@@ -133,38 +133,38 @@ namespace StandaloneOrganizr
 			{
 				foreach (var prog in plist.programs.Where(p => p.keywords.Count == 0))
 				{
-					resultlist.Items.Add(prog);
+					resultlist.Items.Add(new SearchResult(prog));
 				}
 			}
 			else if (cmd == "a" || cmd == "all")
 			{
 				foreach (var prog in plist.programs)
 				{
-					resultlist.Items.Add(prog);
+					resultlist.Items.Add(new SearchResult(prog));
 				}
 			}
 			else if (cmd == "n" || cmd == "new")
 			{
 				foreach (var prog in plist.programs.Where(p => p.newly))
 				{
-					resultlist.Items.Add(prog);
+					resultlist.Items.Add(new SearchResult(prog));
 				}
 			}
 		}
 
 		private void resultlist_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-			var sel = resultlist.SelectedItem as ProgramLink;
+			var sel = resultlist.SelectedItem as SearchResult;
 
 			if (sel == null)
 				return;
 
-			Process.Start("explorer.exe", Path.GetFullPath(sel.directory));
+			Process.Start("explorer.exe", Path.GetFullPath(sel.program.directory));
 		}
 
 		private void resultlist_MouseRightButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-			var sel = resultlist.SelectedItem as ProgramLink;
+			var sel = resultlist.SelectedItem as SearchResult;
 
 			if (sel == null)
 				return;
@@ -174,7 +174,7 @@ namespace StandaloneOrganizr
 				plist.Update(FILENAME);
 				resultlist.Items.Refresh();
 				return 0;
-			}, sel);
+			}, sel.program);
 
 			window.ShowDialog();
 		}
