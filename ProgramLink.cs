@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -137,6 +139,11 @@ namespace StandaloneOrganizr
 		public override string ToString()
 		{
 			return name;
+		}
+
+		public void Start()
+		{
+			Process.Start("explorer.exe", Path.GetFullPath(directory));
 		}
 	}
 }

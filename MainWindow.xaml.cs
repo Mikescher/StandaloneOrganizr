@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -222,7 +221,8 @@ namespace StandaloneOrganizr
 			if (sel == null)
 				return;
 
-			Process.Start("explorer.exe", Path.GetFullPath(sel.program.directory));
+			sel.program.Start();
+			Environment.Exit(0);
 		}
 
 		private void resultlist_MouseRightButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -288,6 +288,15 @@ namespace StandaloneOrganizr
 		private void MenuItemExit_Click(object sender, RoutedEventArgs e)
 		{
 			Close();
+		}
+
+		private void searchbox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+		{
+			if (e.Key == System.Windows.Input.Key.Enter && resultlist.Items.Count > 0)
+			{
+				(resultlist.Items[0] as SearchResult).Start();
+				Environment.Exit(0);
+			}
 		}
 	}
 }

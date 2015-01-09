@@ -15,5 +15,10 @@ namespace StandaloneOrganizr
 		{
 			return program.ToString();
 		}
+
+		public void Start()
+		{
+			program.Start();
+		}
 	}
 }
