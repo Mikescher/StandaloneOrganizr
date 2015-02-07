@@ -11,12 +11,12 @@ namespace StandaloneOrganizr
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
-	public partial class MainWindow : Window
+	public partial class MainWindow
 	{
-		private const string FILENAME = ".organizr";
-		private const string VERSION = "1.0";
+		private const string Filename = ".organizr";
+		private const string Version = "1.0.1";
 
-		private ProgramList plist = new ProgramList();
+		private readonly ProgramList plist = new ProgramList();
 
 		public MainWindow()
 		{
@@ -26,7 +26,7 @@ namespace StandaloneOrganizr
 			{
 				Init();
 
-				Title = "StandaloneOrganizr" + " v" + VERSION + " (" + Path.GetFileName(Path.GetFullPath(".")) + ")";
+				Title = "StandaloneOrganizr" + " v" + Version + " (" + Path.GetFileName(Path.GetFullPath(".")) + ")";
 			}
 			catch (Exception e)
 			{
@@ -36,9 +36,9 @@ namespace StandaloneOrganizr
 
 		private void Init()
 		{
-			if (File.Exists(FILENAME))
+			if (File.Exists(Filename))
 			{
-				string data = File.ReadAllText(FILENAME, Encoding.UTF8);
+				var data = File.ReadAllText(Filename, Encoding.UTF8);
 
 				plist.Load(data);
 			}
@@ -46,27 +46,26 @@ namespace StandaloneOrganizr
 			var directories = Directory.GetDirectories(".");
 
 			var missing = directories
-				.Select(p => Path.GetFileName(p))
+				.Select(Path.GetFileName)
 				.Where(p => !plist.ContainsFolder(p))
 				.ToList();
 
-			var removed = plist.programs
-				.Where(p => !directories.Any(q => Path.GetFileName(q).ToLower() == p.directory.ToLower()))
+			var removed = plist.Programs
+				.Where(p => directories.All(q => (Path.GetFileName(q) ?? string.Empty).ToLower() != p.Directory.ToLower()))
 				.ToList();
 
 			foreach (var rem in removed)
 			{
-				var result = MessageBox.Show("Program " + rem.name + " was removed.\r\nDo you want to delete it from the database ?", "Program removed", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+				var result = MessageBox.Show("Program " + rem.Name + " was removed.\r\nDo you want to delete it from the database ?", "Program removed", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
 
 				switch (result)
 				{
 					case MessageBoxResult.Yes:
-						plist.programs.Remove(rem);
-						plist.Update(FILENAME);
+						plist.Programs.Remove(rem);
+						plist.Update(Filename);
 						break;
 					case MessageBoxResult.No:
 						break;
-					case MessageBoxResult.Cancel:
 					default:
 						Environment.Exit(-1);
 						return;
@@ -74,64 +73,64 @@ namespace StandaloneOrganizr
 
 			}
 
-			if (missing.Count() > 0)
+			if (missing.Any())
 			{
 				foreach (var miss in missing)
 				{
-					plist.programs.Add(new ProgramLink()
+					plist.Programs.Add(new ProgramLink()
 					{
-						directory = miss,
-						name = miss,
-						keywords = new List<string>(),
-						newly = true,
+						Directory = miss,
+						Name = miss,
+						Keywords = new List<string>(),
+						Newly = true,
 					});
 				}
 
-				plist.Update(FILENAME);
+				plist.Update(Filename);
 			}
 
-			if (missing.Count() > 0)
+			if (missing.Any())
 			{
-				searchbox.Text = ":new";
+				Searchbox.Text = ":new";
 				searchbox_TextChanged(null, null);
 			}
-			else if (plist.programs.Where(p => p.keywords.Count == 0).Count() > 0)
+			else if (plist.Programs.Any(p => p.Keywords.Count == 0))
 			{
-				searchbox.Text = ":empty";
+				Searchbox.Text = ":empty";
 				searchbox_TextChanged(null, null);
 			}
 		}
 
 		private void searchbox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
 		{
-			if (searchbox.Text.StartsWith(":"))
+			if (Searchbox.Text.StartsWith(":"))
 			{
-				searchCommand();
+				SearchCommand();
 			}
-			else if (searchbox.Text.StartsWith("/"))
+			else if (Searchbox.Text.StartsWith("/"))
 			{
-				searchRegex();
+				SearchRegex();
 			}
 			else
 			{
-				searchText();
+				SearchText();
 			}
 
 		}
 
-		private void searchText()
+		private void SearchText()
 		{
-			resultlist.Items.Clear();
+			Resultlist.Items.Clear();
 
-			var searchwords = searchbox.Text.Split(' ', '+', ',').Select(p => p.Trim()).Where(p => p != "").ToList();
+			var searchwords = Searchbox.Text.Split(' ', '+', ',').Select(p => p.Trim()).Where(p => p != "").ToList();
 
 			var results = new List<SearchResult>();
 
 			foreach (var singleresultset in searchwords.Select(p => plist.Find(p)).SelectMany(p => p))
 			{
-				if (results.Any(p => p.program.directory.ToLower() == singleresultset.program.directory.ToLower()))
+				if (results.Any(p => p.program.Directory.ToLower() == singleresultset.program.Directory.ToLower()))
 				{
-					results.First(p => p.program.directory.ToLower() == singleresultset.program.directory.ToLower()).score += singleresultset.score;
+					results.First(p => p.program.Directory.ToLower() == singleresultset.program.Directory.ToLower()).Score += singleresultset.Score;
 				}
 				else
 				{
@@ -139,21 +138,21 @@ namespace StandaloneOrganizr
 				}
 			}
 
-			foreach (var result in results.Where(p => p.score > 0).OrderByDescending(p => p.score))
+			foreach (var result in results.Where(p => p.Score > 0).OrderByDescending(p => p.Score))
 			{
-				resultlist.Items.Add(result);
+				Resultlist.Items.Add(result);
 			}
 		}
 
-		private void searchRegex()
+		private void SearchRegex()
 		{
-			resultlist.Items.Clear();
+			Resultlist.Items.Clear();
 
 			Regex regex;
 
 			try
 			{
-				string rextext = searchbox.Text.Substring(1);
+				string rextext = Searchbox.Text.Substring(1);
 				if (rextext.EndsWith("/"))
 					rextext = rextext.Substring(0, rextext.Length - 1);
 				rextext = "^" + rextext + "$";
@@ -169,9 +168,9 @@ namespace StandaloneOrganizr
 
 			foreach (var singleresultset in plist.Find(regex))
 			{
-				if (results.Any(p => p.program.directory.ToLower() == singleresultset.program.directory.ToLower()))
+				if (results.Any(p => p.program.Directory.ToLower() == singleresultset.program.Directory.ToLower()))
 				{
-					results.First(p => p.program.directory.ToLower() == singleresultset.program.directory.ToLower()).score += singleresultset.score;
+					results.First(p => p.program.Directory.ToLower() == singleresultset.program.Directory.ToLower()).Score += singleresultset.Score;
 				}
 				else
 				{
@@ -179,44 +178,44 @@ namespace StandaloneOrganizr
 				}
 			}
 
-			foreach (var result in results.Where(p => p.score > 0).OrderByDescending(p => p.score))
+			foreach (var result in results.Where(p => p.Score > 0).OrderByDescending(p => p.Score))
 			{
-				resultlist.Items.Add(result);
+				Resultlist.Items.Add(result);
 			}
 		}
 
-		private void searchCommand()
+		private void SearchCommand()
 		{
-			resultlist.Items.Clear();
+			Resultlist.Items.Clear();
 
-			string cmd = searchbox.Text.Trim(':').Trim().ToLower();
+			string cmd = Searchbox.Text.Trim(':').Trim().ToLower();
 
 			if (cmd == "e" || cmd == "empty")
 			{
-				foreach (var prog in plist.programs.Where(p => p.keywords.Count == 0))
+				foreach (var prog in plist.Programs.Where(p => p.Keywords.Count == 0))
 				{
-					resultlist.Items.Add(new SearchResult(prog));
+					Resultlist.Items.Add(new SearchResult(prog));
 				}
 			}
 			else if (cmd == "a" || cmd == "all")
 			{
-				foreach (var prog in plist.programs)
+				foreach (var prog in plist.Programs)
 				{
-					resultlist.Items.Add(new SearchResult(prog));
+					Resultlist.Items.Add(new SearchResult(prog));
 				}
 			}
 			else if (cmd == "n" || cmd == "new")
 			{
-				foreach (var prog in plist.programs.Where(p => p.newly))
+				foreach (var prog in plist.Programs.Where(p => p.Newly))
 				{
-					resultlist.Items.Add(new SearchResult(prog));
+					Resultlist.Items.Add(new SearchResult(prog));
 				}
 			}
 		}
 
 		private void resultlist_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-			var sel = resultlist.SelectedItem as SearchResult;
+			var sel = Resultlist.SelectedItem as SearchResult;
 
 			if (sel == null)
 				return;
@@ -227,15 +226,15 @@ namespace StandaloneOrganizr
 
 		private void resultlist_MouseRightButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
 		{
-			var sel = resultlist.SelectedItem as SearchResult;
+			var sel = Resultlist.SelectedItem as SearchResult;
 
 			if (sel == null)
 				return;
 
 			var window = new LinkEditWindow(() =>
 			{
-				plist.Update(FILENAME);
-				resultlist.Items.Refresh();
+				plist.Update(Filename);
+				Resultlist.Items.Refresh();
 				return 0;
 			}, sel.program);
 
@@ -244,45 +243,45 @@ namespace StandaloneOrganizr
 
 		private void MenuItemReset_Click(object sender, RoutedEventArgs e)
 		{
-			searchbox.Text = "";
+			Searchbox.Text = "";
 			searchbox_TextChanged(null, null);
 
-			plist.programs.Clear();
-			plist.Update(FILENAME);
+			plist.Programs.Clear();
+			plist.Update(Filename);
 		}
 
 		private void MenuItemInsertAll_Click(object sender, RoutedEventArgs e)
 		{
-			searchbox.Text = ":all";
+			Searchbox.Text = ":all";
 			searchbox_TextChanged(null, null);
 		}
 
 		private void MenuItemInsertEmpty_Click(object sender, RoutedEventArgs e)
 		{
-			searchbox.Text = ":empty";
+			Searchbox.Text = ":empty";
 			searchbox_TextChanged(null, null);
 		}
 
 		private void MenuItemInsertNew_Click(object sender, RoutedEventArgs e)
 		{
-			searchbox.Text = ":new";
+			Searchbox.Text = ":new";
 			searchbox_TextChanged(null, null);
 		}
 
 		private void MenuItemInsertRegex_Click(object sender, RoutedEventArgs e)
 		{
-			searchbox.Text = "/Regex/";
+			Searchbox.Text = "/Regex/";
 			searchbox_TextChanged(null, null);
 		}
 
 		private void Something_GotFocus(object sender, RoutedEventArgs e)
 		{
-			searchbox.SelectAll();
+			Searchbox.SelectAll();
 		}
 
 		private void MenuItemAbout_Click(object sender, RoutedEventArgs e)
 		{
-			MessageBox.Show("Standalone Organizr " + Environment.NewLine + "// by Mike Schwörer (2014)" + Environment.NewLine + "@ http://www.mikescher.de", "Standalone Organizr v" + VERSION);
+			MessageBox.Show("Standalone Organizr " + Environment.NewLine + "// by Mike Schwörer (2014)" + Environment.NewLine + "@ http://www.mikescher.de", "Standalone Organizr v" + Version);
 		}
 
 		private void MenuItemExit_Click(object sender, RoutedEventArgs e)
@@ -292,9 +291,9 @@ namespace StandaloneOrganizr
 
 		private void searchbox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
 		{
-			if (e.Key == System.Windows.Input.Key.Enter && resultlist.Items.Count > 0)
+			if (e.Key == System.Windows.Input.Key.Enter && Resultlist.Items.Count > 0)
 			{
-				(resultlist.Items[0] as SearchResult).Start();
+				((SearchResult)Resultlist.Items[0]).Start();
 				Environment.Exit(0);
 			}
 		}

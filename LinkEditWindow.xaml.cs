@@ -7,28 +7,28 @@ namespace StandaloneOrganizr
 	/// <summary>
 	/// Interaction logic for LinkEditWindow.xaml
 	/// </summary>
-	public partial class LinkEditWindow : Window
+	public partial class LinkEditWindow
 	{
 		private readonly ProgramLink link;
 		private readonly Func<int> update;
 
 		public LinkEditWindow(Func<int> u, ProgramLink p)
 		{
-			this.link = p;
-			this.update = u;
+			link = p;
+			update = u;
 
 			InitializeComponent();
 
-			edName.Text = link.name;
-			edDirectory.Text = link.directory;
-			edKeywords.Text = string.Join(Environment.NewLine, link.keywords);
+			edName.Text = link.Name;
+			edDirectory.Text = link.Directory;
+			edKeywords.Text = string.Join(Environment.NewLine, link.Keywords);
 		}
 
 		private void btnOK_Click(object sender, RoutedEventArgs e)
 		{
-			link.name = edName.Text;
-			link.directory = edDirectory.Text;
-			link.keywords = edKeywords.Text.Split(new string[] { Environment.NewLine, " " }, StringSplitOptions.None).ToList();
+			link.Name = edName.Text.Replace(":", "_").Replace("\"", "_");
+			link.Directory = edDirectory.Text;
+			link.Keywords = edKeywords.Text.Split(new[] { Environment.NewLine, " " }, StringSplitOptions.None).ToList();
 
 			update();
 

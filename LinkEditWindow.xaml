@@ -4,8 +4,8 @@
         Title="Edit Program..." Height="300" Width="300" WindowStartupLocation="CenterOwner" Icon="icon.ico">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="24"/>
-            <RowDefinition Height="24"/>
+            <RowDefinition Height="28"/>
+            <RowDefinition Height="28"/>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>

@@ -10,50 +10,44 @@ namespace StandaloneOrganizr
 {
 	public class ProgramList
 	{
-		public List<ProgramLink> programs = new List<ProgramLink>();
-
-		public ProgramList()
-		{
-
-		}
-
-		public ProgramList(string src)
-		{
-			Load(src);
-		}
+		public readonly List<ProgramLink> Programs = new List<ProgramLink>();
 
 		public void Load(string data)
 		{
-			string[] lines = data.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+			var lines = data.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
-			for (int i = 0; (i + 1) < lines.Length; i += 2)
+			for (var i = 0; (i + 1) < lines.Length; i += 2)
 			{
-				programs.Add(new ProgramLink(lines[i] + Environment.NewLine + lines[i + 1]));
+				Programs.Add(new ProgramLink(lines[i] + Environment.NewLine + lines[i + 1], i));
 			}
 		}
 
-		public string Save()
+		private string Save()
 		{
-			return string.Join(Environment.NewLine, programs.Select(p => p.Save()));
+			return string.Join(Environment.NewLine, Programs.Select(p => p.Save()));
 		}
 
 		public List<SearchResult> Find(string search)
 		{
-			return programs
-				.Select(p => new SearchResult(p) { score = p.Find(search) })
+			return Programs
+				.Select(p => new SearchResult(p) { Score = p.Find(search) })
 				.ToList();
 		}
 
-		public List<SearchResult> Find(Regex regex)
+		public IEnumerable<SearchResult> Find(Regex regex)
 		{
-			return programs
-				.Select(p => new SearchResult(p) { score = p.Find(regex) })
+			return Programs
+				.Select(p => new SearchResult(p) { Score = p.Find(regex) })
 				.ToList();
 		}
 
 		public bool ContainsFolder(string path)
 		{
-			return programs.Any(p => p.directory.ToLower() == Path.GetFileName(path).ToLower());
+			return Programs.Any(p =>
+			{
+				var fileName = Path.GetFileName(path);
+				return fileName != null && p.Directory.ToLower() == fileName.ToLower();
+			});
 		}
 
 		public void Update(string fn)

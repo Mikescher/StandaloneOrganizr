@@ -10,89 +10,83 @@ namespace StandaloneOrganizr
 {
 	public class ProgramLink
 	{
-		public string name = "";
-		public string directory = "";
-		public List<string> keywords = new List<string>();
-		public bool newly = false;
+		public string Name = "";
+		public string Directory = "";
+		public List<string> Keywords = new List<string>();
+		public bool Newly /* = false */;
 
 		public ProgramLink()
 		{
 		}
 
-		public ProgramLink(string src)
+		public ProgramLink(string src, int line)
 		{
-			Load(src);
+			Load(src, line);
 		}
 
-		public void Load(string data)
+		private void Load(string data, int line)
 		{
-			string[] lines = data.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+			var lines = data.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 			if (lines.Length != 2)
-				throw new Exception("Invalid db file syntax");
+				throw new Exception("[ERR_2001] Invalid db file syntax in line " + line);
 
-			string[] head = lines[0].Split(':');
+			var head = lines[0].Split(':');
 			if (head.Length != 2)
-				throw new Exception("Invalid db file syntax");
+				throw new Exception("[ERR_2002] Invalid db file syntax in line " + line);
 
-			name = head[0].Trim();
-			directory = Regex.Unescape(head[1].Trim());
+			Name = head[0].Trim();
+			Directory = UnescapeStr(head[1].Trim());
 
-			if (!(directory.StartsWith("\"") && directory.EndsWith("\"")))
-				throw new Exception("Invalid db file syntax");
+			if (!(Directory.StartsWith("\"") && Directory.EndsWith("\"")))
+				throw new Exception("[ERR_2003] Invalid db file syntax in line " + (line + 1));
 
-			directory = directory.Substring(1, directory.Length - 2);
+			Directory = Directory.Substring(1, Directory.Length - 2);
 
-			keywords = lines[1].Trim().Split(' ').Where(p => p.Trim() != "").Select(p => p.ToLower()).Distinct().ToList();
+			Keywords = lines[1].Trim().Split(' ').Where(p => p.Trim() != "").Select(p => p.ToLower()).Distinct().ToList();
 		}
 
 		public string Save()
 		{
-			return name + ": \"" + EscapeStr(directory) + "\"" + Environment.NewLine + "\t" + string.Join(" ", keywords);
+			return Name + ": \"" + EscapeStr(Directory) + "\"" + Environment.NewLine + "\t" + string.Join(" ", Keywords);
 		}
 
 		public int Find(string search)
 		{
-			if (name.ToLower().Contains(search.ToLower()))
+			if (Name.ToLower().Contains(search.ToLower()))
 				return 2;
 
-			if (keywords.Any(p => p.ToLower().Contains(search.ToLower())))
-				return 1;
-
-			return 0;
+			return Keywords.Any(p => p.ToLower().Contains(search.ToLower())) ? 1 : 0;
 		}
 
 		public int Find(Regex regex)
 		{
-			if (regex.IsMatch(name))
+			if (regex.IsMatch(Name))
 				return 2;
 
-			if (keywords.Any(p => regex.IsMatch(p)))
-				return 1;
-
-			return 0;
+			return Keywords.Any(regex.IsMatch) ? 1 : 0;
 		}
 
-		public static string EscapeStr(string value)
+		private static string EscapeStr(string value)
 		{
-			const char BACK_SLASH = '\\';
-			const char SLASH = '/';
-			const char DBL_QUOTE = '"';
+			const char backSlash = '\\';
+			const char slash = '/';
+			const char dblQuote = '"';
 
 			var output = new StringBuilder(value.Length);
-			foreach (char c in value)
+			foreach (var c in value)
 			{
 				switch (c)
 				{
-					case SLASH:
-						output.AppendFormat("{0}{1}", BACK_SLASH, SLASH);
+					case slash:
+						output.AppendFormat("{0}{1}", backSlash, slash);
 						break;
 
-					case BACK_SLASH:
-						output.AppendFormat("{0}{0}", BACK_SLASH);
+					case backSlash:
+						output.AppendFormat("{0}{0}", backSlash);
 						break;
 
-					case DBL_QUOTE:
-						output.AppendFormat("{0}{1}", BACK_SLASH, DBL_QUOTE);
+					case dblQuote:
+						output.AppendFormat("{0}{1}", backSlash, dblQuote);
 						break;
 
 					default:
@@ -104,13 +98,13 @@ namespace StandaloneOrganizr
 			return output.ToString();
 		}
 
-		public static string UnescapeStr(string value)
+		private static string UnescapeStr(string value)
 		{
-			const char BACK_SLASH = '\\';
+			const char backSlash = '\\';
 
 			var output = new StringBuilder(value.Length);
-			bool esc = false;
-			foreach (char c in value)
+			var esc = false;
+			foreach (var c in value)
 			{
 				if (esc)
 				{
@@ -121,7 +115,7 @@ namespace StandaloneOrganizr
 				{
 					switch (c)
 					{
-						case BACK_SLASH:
+						case backSlash:
 							esc = true;
 							output.Append(c);
 							break;
@@ -138,12 +132,12 @@ namespace StandaloneOrganizr
 
 		public override string ToString()
 		{
-			return name;
+			return Name;
 		}
 
 		public void Start()
 		{
-			Process.Start("explorer.exe", Path.GetFullPath(directory));
+			Process.Start("explorer.exe", Path.GetFullPath(Directory));
 		}
 	}
 }

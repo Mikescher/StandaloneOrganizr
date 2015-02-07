@@ -5,7 +5,7 @@
         Height="350" Width="525" 
         WindowStartupLocation="CenterScreen" Icon="icon.ico" GotFocus="Something_GotFocus">
 
-    <Grid FocusManager.FocusedElement="{Binding ElementName=searchbox}">
+    <Grid FocusManager.FocusedElement="{Binding ElementName=Searchbox}">
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
             <RowDefinition Height="40"/>
@@ -31,7 +31,7 @@
             </MenuItem>
         </Menu>
 
-        <TextBox x:Name="searchbox" 
+        <TextBox x:Name="Searchbox" 
                  Grid.Row="1" Grid.Column="0" 
                  Margin="2" 
                  TextChanged="searchbox_TextChanged" 
@@ -41,7 +41,7 @@
         	Grid.Row="2" Grid.Column="0" 
         	Margin="2" VerticalScrollBarVisibility="Auto">
 
-            <ListBox x:Name="resultlist" 
+            <ListBox x:Name="Resultlist" 
         		MouseDoubleClick="resultlist_MouseDoubleClick"
         		FontSize="24" Background="{x:Null}" BorderBrush="{x:Null}" 
                 MouseRightButtonUp="resultlist_MouseRightButtonUp" />
