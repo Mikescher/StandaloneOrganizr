@@ -204,6 +204,16 @@ namespace StandaloneOrganizr
 				return;
 			}
 		}
+
+		private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Escape)
+			{
+				e.Handled = true;
+				Close();
+				return;
+			}
+		}
 	}
 }
 
