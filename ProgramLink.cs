@@ -150,9 +150,24 @@ namespace StandaloneOrganizr
 			return Name;
 		}
 
-		public void Start(string rootPath)
+		public void Start(FileSystemScanner scanner)
 		{
-			Process.Start("explorer.exe", Path.Combine(rootPath, Directory));
+			string exec = scanner.FindExecutable(this);
+
+			if (exec != null)
+			{
+				Process.Start(exec);
+			}
+			else
+			{
+				Process.Start("explorer.exe", GetAbsolutePath(scanner.GetRootPath()));
+			}
+
+		}
+
+		public string GetAbsolutePath(string rootPath)
+		{
+			return Path.Combine(rootPath, Directory);
 		}
 	}
 }

@@ -167,7 +167,7 @@ namespace StandaloneOrganizr
 
 		private void Start(ProgramLink r)
 		{
-			r.Start(RootPath);
+			r.Start(Scanner);
 			Close();
 		}
 

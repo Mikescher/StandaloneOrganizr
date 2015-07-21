@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace StandaloneOrganizr
 {
-	class FileSystemScanner
+	public class FileSystemScanner
 	{
 		private readonly string folderPath;
 
@@ -42,6 +42,65 @@ namespace StandaloneOrganizr
 
 				db.EndUpdate();
 			}
+		}
+
+		public string FindExecutable(ProgramLink prog)
+		{
+			string progPath = prog.GetAbsolutePath(folderPath);
+			string result;
+
+			//#########################
+
+			result = FindExecutableInFolder(progPath, prog);
+			if (result != null) return result;
+
+			//#########################
+
+			var binPath = Path.Combine(progPath, "bin");
+			if (Directory.Exists(binPath))
+			{
+				result = FindExecutableInFolder(binPath, prog);
+				if (result != null) return result;
+			}
+
+			//#########################
+
+			var folders = Directory.GetDirectories(progPath);
+			if (folders.Count() == 1)
+			{
+				result = FindExecutableInFolder(folders[0], prog);
+				if (result != null) return result;
+			}
+
+			//#########################
+
+			return null;
+		}
+
+		private string FindExecutableInFolder(string path, ProgramLink prog)
+		{
+			var executables = Directory
+				.EnumerateFiles(path)
+				.Where(f => (Path.GetExtension(f) ?? "err").ToLower() == ".exe")
+				.ToList();
+
+			if (executables.Count == 1)
+			{
+				return executables.First();
+			}
+
+			if (executables.Any(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower()))
+			{
+					return executables.First(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower());
+
+			}
+
+			return null;
+		}
+
+		public string GetRootPath()
+		{
+			return folderPath;
 		}
 	}
 }
