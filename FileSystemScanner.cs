@@ -32,7 +32,7 @@ namespace StandaloneOrganizr
 
 				foreach (var miss in missing)
 				{
-					db.Add(new ProgramLink
+					db.Add(new ProgramLink(this)
 					{
 						Directory = miss,
 						Name = miss,

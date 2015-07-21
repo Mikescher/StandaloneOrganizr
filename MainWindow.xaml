@@ -8,53 +8,61 @@
 		PreviewKeyDown="Window_PreviewKeyDown"
 		GotFocus="Something_GotFocus">
 
-    <Grid FocusManager.FocusedElement="{Binding ElementName=Searchbox}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="20"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="1*"/>
-        </Grid.RowDefinitions>
+	<Grid FocusManager.FocusedElement="{Binding ElementName=Searchbox}">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="64"/>
+			<ColumnDefinition Width="1*"/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="20"/>
+			<RowDefinition Height="64"/>
+			<RowDefinition Height="1*"/>
+		</Grid.RowDefinitions>
 
-        <Menu Grid.Row="0" Grid.Column="0">
-            <MenuItem Header="File">
-                <MenuItem Header="Reset" Click="MenuItemReset_Click"/>
-                <MenuItem Header="Exit" Click="MenuItemExit_Click"/>
-            </MenuItem>
+		<Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+			<MenuItem Header="File">
+				<MenuItem Header="Reset" Click="MenuItemReset_Click"/>
+				<MenuItem Header="Exit" Click="MenuItemExit_Click"/>
+			</MenuItem>
 
-            <MenuItem Header="Insert">
-                <MenuItem Header="All programs" Click="MenuItemInsertAll_Click"/>
-                <MenuItem Header="New programs" Click="MenuItemInsertNew_Click"/>
-                <MenuItem Header="Empty programs" Click="MenuItemInsertEmpty_Click"/>
-                <Separator HorizontalAlignment="Left" Width="190"/>
-                <MenuItem Header="Regular Expression" Click="MenuItemInsertRegex_Click"/>
-            </MenuItem>
-            
-            <MenuItem Header="Help">
-                <MenuItem Header="About ..." Click="MenuItemAbout_Click"/>
-            </MenuItem>
-        </Menu>
+			<MenuItem Header="Insert">
+				<MenuItem Header="All programs" Click="MenuItemInsertAll_Click"/>
+				<MenuItem Header="New programs" Click="MenuItemInsertNew_Click"/>
+				<MenuItem Header="Empty programs" Click="MenuItemInsertEmpty_Click"/>
+				<MenuItem Header="programs wothout icons" Click="MenuItemInsertNoIcon_Click"/>
+				<Separator HorizontalAlignment="Left" Width="190"/>
+				<MenuItem Header="Regular Expression" Click="MenuItemInsertRegex_Click"/>
+			</MenuItem>
 
-        <TextBox x:Name="Searchbox" 
-                 Grid.Row="1" Grid.Column="0" 
-                 Margin="2" 
+			<MenuItem Header="Help">
+				<MenuItem Header="About ..." Click="MenuItemAbout_Click"/>
+			</MenuItem>
+		</Menu>
+
+		<TextBox x:Name="Searchbox" 
+                 Grid.Row="1" Grid.Column="1"
+                 Margin="10,2" 
                  TextChanged="searchbox_TextChanged" 
                  FontSize="24" 
 				 VerticalAlignment="Center" 
 				 GotFocus="Something_GotFocus" 
 				 PreviewKeyDown="Searchbox_PreviewKeyDown" />
-        
-        <ScrollViewer 
-        	Grid.Row="2" Grid.Column="0" 
-        	Margin="2" VerticalScrollBarVisibility="Auto">
 
-            <ListBox x:Name="Resultlist" 
+		<Image x:Name="imgIcon" Grid.Row="1" Grid.Column="0" RenderOptions.BitmapScalingMode="HighQuality" />
+		
+		<ScrollViewer 
+        	Grid.Row="2" Grid.Column="0" 
+        	Margin="2" VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2">
+
+			<ListBox x:Name="Resultlist" 
         		MouseDoubleClick="resultlist_MouseDoubleClick"
         		FontSize="24" 
 				Background="{x:Null}" 
 				BorderBrush="{x:Null}" 
 				KeyDown="Resultlist_KeyDown"
+				SelectionChanged="Resultlist_SelectionChanged"
                 MouseRightButtonUp="resultlist_MouseRightButtonUp" />
 
-        </ScrollViewer>
-    </Grid>
+		</ScrollViewer>
+	</Grid>
 </Window>

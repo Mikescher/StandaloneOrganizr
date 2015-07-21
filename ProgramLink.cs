@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Media;
+using StandaloneOrganizr.IconUtils;
 
 namespace StandaloneOrganizr
 {
@@ -15,15 +17,49 @@ namespace StandaloneOrganizr
 		public List<string> Keywords = new List<string>();
 		public bool IsNew;
 
-		public ProgramLink()
+		private readonly FileSystemScanner Scanner;
+
+		public ImageSource Icon
 		{
-			IsNew = true;
+			get
+			{
+				if (CacheUpToDate) return CachedImage;
+
+				UpdateCache();
+
+				return CachedImage;
+			}
 		}
 
-		public ProgramLink(string src, int line)
+		public string Executable
+		{
+			get
+			{
+				if (CacheUpToDate) return CachedExecutable;
+
+				UpdateCache();
+
+				return CachedExecutable;
+			}
+		}
+
+		private bool CacheUpToDate = false;
+		private ImageSource CachedImage = null;
+		private string CachedExecutable = null;
+
+		public ProgramLink(FileSystemScanner scanner)
+		{
+			IsNew = true;
+
+			Scanner = scanner;
+		}
+
+		public ProgramLink(FileSystemScanner scanner, string src, int line)
 		{
 			Load(src, line);
 			IsNew = false;
+
+			Scanner = scanner;
 		}
 
 		private void Load(string data, int line)
@@ -150,24 +186,49 @@ namespace StandaloneOrganizr
 			return Name;
 		}
 
-		public void Start(FileSystemScanner scanner)
+		public void Start()
 		{
-			string exec = scanner.FindExecutable(this);
-
-			if (exec != null)
+			if (Executable != null)
 			{
-				Process.Start(exec);
+				Process.Start(Executable);
 			}
 			else
 			{
-				Process.Start("explorer.exe", GetAbsolutePath(scanner.GetRootPath()));
+				Process.Start("explorer.exe", GetAbsolutePath(Scanner.GetRootPath()));
 			}
-
 		}
 
 		public string GetAbsolutePath(string rootPath)
 		{
 			return Path.Combine(rootPath, Directory);
+		}
+
+		private void UpdateCache()
+		{
+			var exec = Scanner.FindExecutable(this);
+			if (exec != null)
+			{
+				var extr = new IconExtractor(exec);
+
+				if (extr.Count == 0)
+				{
+					CachedImage = null;
+					CachedExecutable = null;
+				}
+				else
+				{
+					CachedExecutable = exec;
+					CachedImage = IconUtil.ToImageSource(extr.GetIcon(extr.Count - 1));
+				}
+
+			}
+			else
+			{
+				CachedExecutable = null;
+				CachedImage = null;
+			}
+
+			CacheUpToDate = true;
 		}
 	}
 }

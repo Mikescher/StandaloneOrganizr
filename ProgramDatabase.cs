@@ -19,9 +19,13 @@ namespace StandaloneOrganizr
 		{
 			Filename = file;
 
-			if (File.Exists(file))
+		}
+
+		public void TryLoad(FileSystemScanner scanner)
+		{
+			if (File.Exists(Filename))
 			{
-				Load(file);
+				Load(Filename, scanner);
 			}
 		}
 
@@ -43,7 +47,7 @@ namespace StandaloneOrganizr
 			Save();
 		}
 
-		public void Load(string path)
+		public void Load(string path, FileSystemScanner scanner)
 		{
 			var data = File.ReadAllText(path, Encoding.UTF8);
 
@@ -51,7 +55,7 @@ namespace StandaloneOrganizr
 
 			for (var i = 0; (i + 1) < lines.Length; i += 2)
 			{
-				programs.Add(new ProgramLink(lines[i] + Environment.NewLine + lines[i + 1], i));
+				programs.Add(new ProgramLink(scanner, lines[i] + Environment.NewLine + lines[i + 1], i));
 			}
 		}
 
@@ -63,7 +67,7 @@ namespace StandaloneOrganizr
 		private List<SearchResult> FindKeyword(string search)
 		{
 			return programs
-				.Select(p => new SearchResult(p) { Score = p.GetSearchScore(search) })
+				.Select(p => new SearchResult(p, p.GetSearchScore(search)))
 				.ToList();
 		}
 
@@ -75,7 +79,7 @@ namespace StandaloneOrganizr
 		private IEnumerable<SearchResult> FindRegex(Regex regex)
 		{
 			return programs
-				.Select(p => new SearchResult(p) { Score = p.GetSearchScore(regex) })
+				.Select(p => new SearchResult(p, p.GetSearchScore(regex)))
 				.ToList();
 		}
 
@@ -85,17 +89,22 @@ namespace StandaloneOrganizr
 
 			if (cmd == "e" || cmd == "empty")
 			{
-				return List().Where(p => p.Keywords.Count == 0).Select(p => new SearchResult(p));
+				return List().Where(p => p.Keywords.Count == 0).Select(p => new SearchResult(p, 1));
 			}
 
 			if (cmd == "a" || cmd == "all")
 			{
-				return List().Select(p => new SearchResult(p));
+				return List().Select(p => new SearchResult(p, 1));
 			}
 
 			if (cmd == "n" || cmd == "new")
 			{
-				return List().Where(p => p.IsNew).Select(p => new SearchResult(p));
+				return List().Where(p => p.IsNew).Select(p => new SearchResult(p, 1));
+			}
+
+			if (cmd == "ni" || cmd == "no-icon")
+			{
+				return List().Where(p => p.Executable == null).Select(p => new SearchResult(p, 1));
 			}
 
 			return Enumerable.Empty<SearchResult>();

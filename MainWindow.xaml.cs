@@ -50,6 +50,8 @@ namespace StandaloneOrganizr
 			Database = new ProgramDatabase(DatabasePath);
 			Scanner = new FileSystemScanner(RootPath);
 
+			Database.TryLoad(Scanner);
+
 			List<ProgramLink> removed;
 			List<string> missing;
 
@@ -91,6 +93,11 @@ namespace StandaloneOrganizr
 				.Find(Searchbox.Text)
 				.ToList()
 				.ForEach(p => Resultlist.Items.Add(p));
+
+			if (Resultlist.Items.Count > 0)
+				Select(((SearchResult)Resultlist.Items[0]).Program);
+			else
+				Select(null);
 		}
 
 		private void resultlist_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -147,6 +154,11 @@ namespace StandaloneOrganizr
 			Searchbox.Text = "/Regex/";
 		}
 
+		private void MenuItemInsertNoIcon_Click(object sender, RoutedEventArgs e)
+		{
+			Searchbox.Text = ":no-icon";
+		}
+
 		private void Something_GotFocus(object sender, RoutedEventArgs e)
 		{
 			Searchbox.SelectAll();
@@ -167,7 +179,7 @@ namespace StandaloneOrganizr
 
 		private void Start(ProgramLink r)
 		{
-			r.Start(Scanner);
+			r.Start();
 			Close();
 		}
 
@@ -212,6 +224,26 @@ namespace StandaloneOrganizr
 				e.Handled = true;
 				Close();
 				return;
+			}
+		}
+
+		private void Resultlist_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (Resultlist.SelectedItem != null)
+				Select(((SearchResult) Resultlist.SelectedItem).Program);
+			else
+				Select(null);
+		}
+
+		private void Select(ProgramLink prog)
+		{
+			if (prog == null)
+			{
+				imgIcon.Source = null;
+			}
+			else
+			{
+				imgIcon.Source = prog.Icon;
 			}
 		}
 	}

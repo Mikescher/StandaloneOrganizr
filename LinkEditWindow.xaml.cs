@@ -29,6 +29,7 @@ namespace StandaloneOrganizr
 			link.Name = edName.Text.Replace(":", "_").Replace("\"", "_");
 			link.Directory = edDirectory.Text;
 			link.Keywords = edKeywords.Text.Split(new[] { Environment.NewLine, " " }, StringSplitOptions.None).ToList();
+			link.IsNew = false;
 
 			update();
 

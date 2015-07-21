@@ -39,6 +39,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -57,6 +58,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="FileSystemScanner.cs" />
+    <Compile Include="IconUtils\IconExtractor.cs" />
+    <Compile Include="IconUtils\IconUtil.cs" />
+    <Compile Include="IconUtils\NativeMethods.cs" />
     <Compile Include="SearchResult.cs" />
     <Page Include="LinkEditWindow.xaml">
       <SubType>Designer</SubType>
