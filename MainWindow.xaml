@@ -35,7 +35,10 @@
                  Grid.Row="1" Grid.Column="0" 
                  Margin="2" 
                  TextChanged="searchbox_TextChanged" 
-                 FontSize="24" VerticalAlignment="Center" GotFocus="Something_GotFocus" KeyDown="searchbox_KeyDown"/>
+                 FontSize="24" 
+				 VerticalAlignment="Center" 
+				 GotFocus="Something_GotFocus" 
+				 PreviewKeyDown="Searchbox_PreviewKeyDown" />
         
         <ScrollViewer 
         	Grid.Row="2" Grid.Column="0" 
@@ -43,7 +46,10 @@
 
             <ListBox x:Name="Resultlist" 
         		MouseDoubleClick="resultlist_MouseDoubleClick"
-        		FontSize="24" Background="{x:Null}" BorderBrush="{x:Null}" 
+        		FontSize="24" 
+				Background="{x:Null}" 
+				BorderBrush="{x:Null}" 
+				KeyDown="Resultlist_KeyDown"
                 MouseRightButtonUp="resultlist_MouseRightButtonUp" />
 
         </ScrollViewer>

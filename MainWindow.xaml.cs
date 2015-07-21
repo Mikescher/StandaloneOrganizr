@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace StandaloneOrganizr
 {
@@ -98,8 +100,7 @@ namespace StandaloneOrganizr
 			if (sel == null)
 				return;
 
-			sel.Program.Start();
-			Environment.Exit(0);
+			Start(sel.Program);
 		}
 
 		private void resultlist_MouseRightButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -164,12 +165,43 @@ namespace StandaloneOrganizr
 			Close();
 		}
 
-		private void searchbox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+		private void Start(ProgramLink r)
 		{
-			if (e.Key == System.Windows.Input.Key.Enter && Resultlist.Items.Count > 0)
+			r.Start(RootPath);
+			Close();
+		}
+
+		private void Searchbox_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter && Resultlist.Items.Count > 0)
 			{
-				((SearchResult)Resultlist.Items[0]).Start();
-				Environment.Exit(0);
+				Start(((SearchResult)Resultlist.Items[0]).Program);
+				e.Handled = true;
+				return;
+			}
+
+			if (e.Key == Key.Down && Resultlist.Items.Count > 0)
+			{
+				Resultlist.SelectedIndex = 0;
+
+				var listBoxItem = (ListBoxItem) Resultlist
+					.ItemContainerGenerator
+					.ContainerFromItem(Resultlist.SelectedItem);
+
+				listBoxItem.Focus();
+				Keyboard.Focus(listBoxItem);
+
+				e.Handled = true;
+				return;
+			}
+		}
+
+		private void Resultlist_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter && Resultlist.SelectedItem != null)
+			{
+				Start(((SearchResult)Resultlist.SelectedItem).Program);
+				return;
 			}
 		}
 	}
@@ -178,15 +210,15 @@ namespace StandaloneOrganizr
 //TODO TaskList
 /*
 
- [ ]  Choose folder by cmd param
+ [X]  Choose folder by cmd param
  [ ]  Show Icon (+ find icons)
  [ ]  Only scan periodically + manual scan
  [ ]  better pattern matching
  [ ]  esc -> close
- [ ]  TOML
+ [/]  TOML
  [ ]  auto exec
  [ ]  keep alive + AltGr-Space shortcut
- [ ]  chose prog with up+down
+ [X]  chose prog with up+down
  [ ]  better skin
 
 */

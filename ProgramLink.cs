@@ -52,20 +52,33 @@ namespace StandaloneOrganizr
 			return Name + ": \"" + EscapeStr(Directory) + "\"" + Environment.NewLine + "\t" + string.Join(" ", Keywords);
 		}
 
-		public int Find(string search)
+		public int GetSearchScore(string search)
 		{
-			if (Name.ToLower().Contains(search.ToLower()))
-				return 2;
+			int score = 0;
 
-			return Keywords.Any(p => p.ToLower().Contains(search.ToLower())) ? 1 : 0;
+			if (Name.ToLower() == search.ToLower())
+				score += 10;
+
+			if (Name.ToLower().Contains(search.ToLower()))
+				score += 2;
+
+			score += 4 * Keywords.Count(p => p.ToLower() == search.ToLower());
+
+			score += 1 * Keywords.Count(p => p.ToLower().Contains(search.ToLower()));
+
+			return score;
 		}
 
-		public int Find(Regex regex)
+		public int GetSearchScore(Regex regex)
 		{
-			if (regex.IsMatch(Name))
-				return 2;
+			int score = 0;
 
-			return Keywords.Any(regex.IsMatch) ? 1 : 0;
+			if (regex.IsMatch(Name))
+				score += 2;
+
+			score += Keywords.Count(regex.IsMatch);
+
+			return score;
 		}
 
 		private static string EscapeStr(string value)
@@ -137,9 +150,9 @@ namespace StandaloneOrganizr
 			return Name;
 		}
 
-		public void Start()
+		public void Start(string rootPath)
 		{
-			Process.Start("explorer.exe", Path.GetFullPath(Directory));
+			Process.Start("explorer.exe", Path.Combine(rootPath, Directory));
 		}
 	}
 }

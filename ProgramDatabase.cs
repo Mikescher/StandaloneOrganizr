@@ -63,7 +63,7 @@ namespace StandaloneOrganizr
 		private List<SearchResult> FindKeyword(string search)
 		{
 			return programs
-				.Select(p => new SearchResult(p) { Score = p.Find(search) })
+				.Select(p => new SearchResult(p) { Score = p.GetSearchScore(search) })
 				.ToList();
 		}
 
@@ -75,7 +75,7 @@ namespace StandaloneOrganizr
 		private IEnumerable<SearchResult> FindRegex(Regex regex)
 		{
 			return programs
-				.Select(p => new SearchResult(p) { Score = p.Find(regex) })
+				.Select(p => new SearchResult(p) { Score = p.GetSearchScore(regex) })
 				.ToList();
 		}
 
@@ -146,12 +146,18 @@ namespace StandaloneOrganizr
 				return Enumerable.Empty<SearchResult>();
 
 			if (searchterm.StartsWith(":"))
-				return FindCommand(searchterm.Substring(1));
+				return FindCommand(searchterm.Substring(1))
+					.Where(p => p.Score > 0)
+					.OrderByDescending(p => p.Score);
 
 			if (searchterm.StartsWith("/") && searchterm.EndsWith("/"))
-				return FindRegex(searchterm.Substring(1, searchterm.Length-2));
+				return FindRegex(searchterm.Substring(1, searchterm.Length - 2))
+					.Where(p => p.Score > 0)
+					.OrderByDescending(p => p.Score);
 
-			return FindKeyword(searchterm);
+			return FindKeyword(searchterm)
+				.Where(p => p.Score > 0)
+				.OrderByDescending(p => p.Score);
 		}
 
 		public void Clear()
