@@ -3,22 +3,22 @@ namespace StandaloneOrganizr
 {
 	public class SearchResult
 	{
-		public readonly ProgramLink program;
+		public readonly ProgramLink Program;
 		public int Score /* = 0 */;
 
 		public SearchResult(ProgramLink p)
 		{
-			program = p;
+			Program = p;
 		}
 
 		public override string ToString()
 		{
-			return program.ToString();
+			return Program.ToString();
 		}
 
 		public void Start()
 		{
-			program.Start();
+			Program.Start();
 		}
 	}
 }

@@ -13,15 +13,17 @@ namespace StandaloneOrganizr
 		public string Name = "";
 		public string Directory = "";
 		public List<string> Keywords = new List<string>();
-		public bool Newly /* = false */;
+		public bool IsNew;
 
 		public ProgramLink()
 		{
+			IsNew = true;
 		}
 
 		public ProgramLink(string src, int line)
 		{
 			Load(src, line);
+			IsNew = false;
 		}
 
 		private void Load(string data, int line)

@@ -13,10 +13,15 @@ namespace StandaloneOrganizr
 	/// </summary>
 	public partial class MainWindow
 	{
-		private const string Filename = ".organizr";
-		private const string Version = "1.0.1";
+		private string RootPath;
+		private string DatabasePath;
 
-		private readonly ProgramList plist = new ProgramList();
+		private const string FN_SETTINGS = ".organizr";
+		private const string VERSION = "1.0.2";
+		private const string ABOUT_URL = "http://www.mikescher.de";
+
+		private FileSystemScanner Scanner;
+		private ProgramDatabase Database;
 
 		public MainWindow()
 		{
@@ -26,7 +31,7 @@ namespace StandaloneOrganizr
 			{
 				Init();
 
-				Title = "StandaloneOrganizr" + " v" + Version + " (" + Path.GetFileName(Path.GetFullPath(".")) + ")";
+				Title = string.Format("StandaloneOrganizr v{0} ({1})", VERSION, Path.GetFileName(RootPath));
 			}
 			catch (Exception e)
 			{
@@ -36,181 +41,54 @@ namespace StandaloneOrganizr
 
 		private void Init()
 		{
-			if (File.Exists(Filename))
-			{
-				var data = File.ReadAllText(Filename, Encoding.UTF8);
+			var args = Environment.GetCommandLineArgs();
+			RootPath = (args.Count() > 1) ? args[1] : Path.GetFullPath(".");
+			DatabasePath = Path.Combine(RootPath, FN_SETTINGS);
 
-				plist.Load(data);
-			}
+			Database = new ProgramDatabase(DatabasePath);
+			Scanner = new FileSystemScanner(RootPath);
 
-			var directories = Directory.GetDirectories(".");
+			List<ProgramLink> removed;
+			List<string> missing;
 
-			var missing = directories
-				.Select(Path.GetFileName)
-				.Where(p => !plist.ContainsFolder(p))
-				.ToList();
-
-			var removed = plist.Programs
-				.Where(p => directories.All(q => (Path.GetFileName(q) ?? string.Empty).ToLower() != p.Directory.ToLower()))
-				.ToList();
+			Scanner.Scan(Database, out removed, out missing);
 
 			foreach (var rem in removed)
 			{
-				var result = MessageBox.Show("Program " + rem.Name + " was removed.\r\nDo you want to delete it from the database ?", "Program removed", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+				var result = MessageBox.Show(
+					"Program " + rem.Name + " was removed.\r\nDo you want to delete it from the database ?", 
+					"Program removed", 
+					MessageBoxButton.YesNoCancel, 
+					MessageBoxImage.Question);
 
 				switch (result)
 				{
 					case MessageBoxResult.Yes:
-						plist.Programs.Remove(rem);
-						plist.Update(Filename);
-						break;
-					case MessageBoxResult.No:
+						Database.Remove(rem);
 						break;
 					default:
-						Environment.Exit(-1);
-						return;
+						break;
 				}
-
-			}
-
-			if (missing.Any())
-			{
-				foreach (var miss in missing)
-				{
-					plist.Programs.Add(new ProgramLink()
-					{
-						Directory = miss,
-						Name = miss,
-						Keywords = new List<string>(),
-						Newly = true,
-					});
-				}
-
-				plist.Update(Filename);
 			}
 
 			if (missing.Any())
 			{
 				Searchbox.Text = ":new";
-				searchbox_TextChanged(null, null);
 			}
-			else if (plist.Programs.Any(p => p.Keywords.Count == 0))
+			else if (Database.List().Any(p => p.Keywords.Count == 0))
 			{
 				Searchbox.Text = ":empty";
-				searchbox_TextChanged(null, null);
 			}
 		}
 
 		private void searchbox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
 		{
-			if (Searchbox.Text.StartsWith(":"))
-			{
-				SearchCommand();
-			}
-			else if (Searchbox.Text.StartsWith("/"))
-			{
-				SearchRegex();
-			}
-			else
-			{
-				SearchText();
-			}
-
-		}
-
-		private void SearchText()
-		{
 			Resultlist.Items.Clear();
 
-			var searchwords = Searchbox.Text.Split(' ', '+', ',').Select(p => p.Trim()).Where(p => p != "").ToList();
-
-			var results = new List<SearchResult>();
-
-			foreach (var singleresultset in searchwords.Select(p => plist.Find(p)).SelectMany(p => p))
-			{
-				if (results.Any(p => p.program.Directory.ToLower() == singleresultset.program.Directory.ToLower()))
-				{
-					results.First(p => p.program.Directory.ToLower() == singleresultset.program.Directory.ToLower()).Score += singleresultset.Score;
-				}
-				else
-				{
-					results.Add(singleresultset);
-				}
-			}
-
-			foreach (var result in results.Where(p => p.Score > 0).OrderByDescending(p => p.Score))
-			{
-				Resultlist.Items.Add(result);
-			}
-		}
-
-		private void SearchRegex()
-		{
-			Resultlist.Items.Clear();
-
-			Regex regex;
-
-			try
-			{
-				string rextext = Searchbox.Text.Substring(1);
-				if (rextext.EndsWith("/"))
-					rextext = rextext.Substring(0, rextext.Length - 1);
-				rextext = "^" + rextext + "$";
-
-				regex = new Regex(rextext, RegexOptions.IgnoreCase);
-			}
-			catch (ArgumentException)
-			{
-				return;
-			}
-
-			var results = new List<SearchResult>();
-
-			foreach (var singleresultset in plist.Find(regex))
-			{
-				if (results.Any(p => p.program.Directory.ToLower() == singleresultset.program.Directory.ToLower()))
-				{
-					results.First(p => p.program.Directory.ToLower() == singleresultset.program.Directory.ToLower()).Score += singleresultset.Score;
-				}
-				else
-				{
-					results.Add(singleresultset);
-				}
-			}
-
-			foreach (var result in results.Where(p => p.Score > 0).OrderByDescending(p => p.Score))
-			{
-				Resultlist.Items.Add(result);
-			}
-		}
-
-		private void SearchCommand()
-		{
-			Resultlist.Items.Clear();
-
-			string cmd = Searchbox.Text.Trim(':').Trim().ToLower();
-
-			if (cmd == "e" || cmd == "empty")
-			{
-				foreach (var prog in plist.Programs.Where(p => p.Keywords.Count == 0))
-				{
-					Resultlist.Items.Add(new SearchResult(prog));
-				}
-			}
-			else if (cmd == "a" || cmd == "all")
-			{
-				foreach (var prog in plist.Programs)
-				{
-					Resultlist.Items.Add(new SearchResult(prog));
-				}
-			}
-			else if (cmd == "n" || cmd == "new")
-			{
-				foreach (var prog in plist.Programs.Where(p => p.Newly))
-				{
-					Resultlist.Items.Add(new SearchResult(prog));
-				}
-			}
+			Database
+				.Find(Searchbox.Text)
+				.ToList()
+				.ForEach(p => Resultlist.Items.Add(p));
 		}
 
 		private void resultlist_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -220,7 +98,7 @@ namespace StandaloneOrganizr
 			if (sel == null)
 				return;
 
-			sel.program.Start();
+			sel.Program.Start();
 			Environment.Exit(0);
 		}
 
@@ -233,10 +111,10 @@ namespace StandaloneOrganizr
 
 			var window = new LinkEditWindow(() =>
 			{
-				plist.Update(Filename);
+				Database.Save();
 				Resultlist.Items.Refresh();
 				return 0;
-			}, sel.program);
+			}, sel.Program);
 
 			window.ShowDialog();
 		}
@@ -244,34 +122,28 @@ namespace StandaloneOrganizr
 		private void MenuItemReset_Click(object sender, RoutedEventArgs e)
 		{
 			Searchbox.Text = "";
-			searchbox_TextChanged(null, null);
 
-			plist.Programs.Clear();
-			plist.Update(Filename);
+			Database.Clear();
 		}
 
 		private void MenuItemInsertAll_Click(object sender, RoutedEventArgs e)
 		{
 			Searchbox.Text = ":all";
-			searchbox_TextChanged(null, null);
 		}
 
 		private void MenuItemInsertEmpty_Click(object sender, RoutedEventArgs e)
 		{
 			Searchbox.Text = ":empty";
-			searchbox_TextChanged(null, null);
 		}
 
 		private void MenuItemInsertNew_Click(object sender, RoutedEventArgs e)
 		{
 			Searchbox.Text = ":new";
-			searchbox_TextChanged(null, null);
 		}
 
 		private void MenuItemInsertRegex_Click(object sender, RoutedEventArgs e)
 		{
 			Searchbox.Text = "/Regex/";
-			searchbox_TextChanged(null, null);
 		}
 
 		private void Something_GotFocus(object sender, RoutedEventArgs e)
@@ -281,7 +153,10 @@ namespace StandaloneOrganizr
 
 		private void MenuItemAbout_Click(object sender, RoutedEventArgs e)
 		{
-			MessageBox.Show("Standalone Organizr " + Environment.NewLine + "// by Mike Schwörer (2014)" + Environment.NewLine + "@ http://www.mikescher.de", "Standalone Organizr v" + Version);
+			string text = string.Format("Standalone Organizr {0}// by Mike Schwörer (2014){0}@ {1}", Environment.NewLine, ABOUT_URL);
+			string caption = string.Format("Standalone Organizr v{0}", VERSION);
+
+			MessageBox.Show(text, caption);
 		}
 
 		private void MenuItemExit_Click(object sender, RoutedEventArgs e)
@@ -299,3 +174,19 @@ namespace StandaloneOrganizr
 		}
 	}
 }
+
+//TODO TaskList
+/*
+
+ [ ]  Choose folder by cmd param
+ [ ]  Show Icon (+ find icons)
+ [ ]  Only scan periodically + manual scan
+ [ ]  better pattern matching
+ [ ]  esc -> close
+ [ ]  TOML
+ [ ]  auto exec
+ [ ]  keep alive + AltGr-Space shortcut
+ [ ]  chose prog with up+down
+ [ ]  better skin
+
+*/
