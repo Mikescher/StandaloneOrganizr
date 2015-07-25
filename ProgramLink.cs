@@ -208,19 +208,26 @@ namespace StandaloneOrganizr
 			var exec = Scanner.FindExecutable(this);
 			if (exec != null)
 			{
-				var extr = new IconExtractor(exec);
+				try
+				{
+					var extr = new IconExtractor(exec);
 
-				if (extr.Count == 0)
+					if (extr.Count == 0)
+					{
+						CachedImage = null;
+						CachedExecutable = null;
+					}
+					else
+					{
+						CachedExecutable = exec;
+						CachedImage = IconUtil.ToImageSource(extr.GetIcon(extr.Count - 1));
+					}
+				}
+				catch (Exception)
 				{
 					CachedImage = null;
 					CachedExecutable = null;
 				}
-				else
-				{
-					CachedExecutable = exec;
-					CachedImage = IconUtil.ToImageSource(extr.GetIcon(extr.Count - 1));
-				}
-
 			}
 			else
 			{
