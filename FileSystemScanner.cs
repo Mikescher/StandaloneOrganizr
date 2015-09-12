@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Documents.Serialization;
 
 namespace StandaloneOrganizr
 {
@@ -51,7 +52,17 @@ namespace StandaloneOrganizr
 
 			//#########################
 
+			result = FindRedirectInFolder(progPath, prog);
+			if (result != null) return result;
+
+			//#########################
+
 			result = FindExecutableInFolder(progPath, prog);
+			if (result != null) return result;
+
+			//#########################
+
+			result = FindJarInFolder(progPath, prog);
 			if (result != null) return result;
 
 			//#########################
@@ -91,8 +102,44 @@ namespace StandaloneOrganizr
 
 			if (executables.Any(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower()))
 			{
-					return executables.First(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower());
+				return executables.First(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower());
+			}
 
+			return null;
+		}
+
+		private string FindJarInFolder(string path, ProgramLink prog)
+		{
+			var executables = Directory
+				.EnumerateFiles(path)
+				.Where(f => (Path.GetExtension(f) ?? "err").ToLower() == ".jar")
+				.ToList();
+
+			if (executables.Count == 1)
+			{
+				return executables.First();
+			}
+
+			if (executables.Any(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower()))
+			{
+				return executables.First(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower());
+			}
+
+			return null;
+		}
+
+		private string FindRedirectInFolder(string path, ProgramLink prog)
+		{
+			var redirects = Directory
+				.EnumerateFiles(path)
+				.Where(f => (Path.GetExtension(f) ?? "err").ToLower() == ".sao-redirect")
+				.Select(f => Path.Combine(Path.GetDirectoryName(f) ?? "", File.ReadAllLines(f).FirstOrDefault() ?? ""))
+				.Where(File.Exists)
+				.ToList();
+
+			if (redirects.Any())
+			{
+				return redirects.First();
 			}
 
 			return null;

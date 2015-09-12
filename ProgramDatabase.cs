@@ -159,7 +159,7 @@ namespace StandaloneOrganizr
 					.Where(p => p.Score > 0)
 					.OrderByDescending(p => p.Score);
 
-			if (searchterm.StartsWith("/") && searchterm.EndsWith("/"))
+			if (searchterm.StartsWith("/") && searchterm.EndsWith("/") && searchterm.Length > 2)
 				return FindRegex(searchterm.Substring(1, searchterm.Length - 2))
 					.Where(p => p.Score > 0)
 					.OrderByDescending(p => p.Score);

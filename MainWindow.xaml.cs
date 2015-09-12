@@ -19,7 +19,7 @@ namespace StandaloneOrganizr
 		private string DatabasePath;
 
 		private const string FN_SETTINGS = ".organizr";
-		private const string VERSION = "1.0.3";
+		private const string VERSION = "1.0.4";
 		private const string ABOUT_URL = "http://www.mikescher.de";
 
 		private FileSystemScanner Scanner;
@@ -253,12 +253,12 @@ namespace StandaloneOrganizr
 /*
 
  [X]  Choose folder by cmd param
- [ ]  Show Icon (+ find icons)
+ [x]  Show Icon (+ find icons)
  [ ]  Only scan periodically + manual scan
- [ ]  better pattern matching
- [ ]  esc -> close
+ [x]  better pattern matching
+ [x]  esc -> close
  [/]  TOML
- [ ]  auto exec
+ [x]  auto exec
  [ ]  keep alive + AltGr-Space shortcut
  [X]  chose prog with up+down
  [ ]  better skin
