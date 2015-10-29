@@ -19,7 +19,7 @@ namespace StandaloneOrganizr
 		private string DatabasePath;
 
 		private const string FN_SETTINGS = ".organizr";
-		private const string VERSION = "1.0.4";
+		private const string VERSION = "1.0.5";
 		private const string ABOUT_URL = "http://www.mikescher.de";
 
 		private FileSystemScanner Scanner;

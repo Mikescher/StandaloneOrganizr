@@ -190,7 +190,11 @@ namespace StandaloneOrganizr
 		{
 			if (Executable != null)
 			{
-				Process.Start(Executable);
+				Process.Start(new ProcessStartInfo
+				{
+					FileName = Executable,
+					WorkingDirectory = Path.GetDirectoryName(Executable) ?? "",
+				});
 			}
 			else
 			{
@@ -214,14 +218,7 @@ namespace StandaloneOrganizr
 				{
 					var extr = new IconExtractor(exec);
 
-					if (extr.Count == 0)
-					{
-						CachedImage = null;
-					}
-					else
-					{
-						CachedImage = IconUtil.ToImageSource(extr.GetIcon(extr.Count - 1));
-					}
+					CachedImage = extr.Count == 0 ? null : IconUtil.ToImageSource(extr.GetIcon(extr.Count - 1));
 				}
 				catch (Exception)
 				{
