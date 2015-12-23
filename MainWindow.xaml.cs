@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,7 +17,7 @@ namespace StandaloneOrganizr
 		private string DatabasePath;
 
 		private const string FN_SETTINGS = ".organizr";
-		private const string VERSION = "1.0.5";
+		private const string VERSION = "1.0.6";
 		private const string ABOUT_URL = "http://www.mikescher.de";
 
 		private FileSystemScanner Scanner;
@@ -179,7 +177,7 @@ namespace StandaloneOrganizr
 
 		private void Start(ProgramLink r)
 		{
-			r.Start();
+			r.Start(Database);
 			Close();
 		}
 

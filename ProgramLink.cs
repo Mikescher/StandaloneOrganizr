@@ -14,6 +14,7 @@ namespace StandaloneOrganizr
 	{
 		public string Name = "";
 		public string Directory = "";
+		public int Priority;
 		public List<string> Keywords = new List<string>();
 		public bool IsNew;
 
@@ -72,7 +73,8 @@ namespace StandaloneOrganizr
 			if (head.Length != 2)
 				throw new Exception("[ERR_2002] Invalid db file syntax in line " + line);
 
-			Name = head[0].Trim();
+			Priority = int.Parse(head[0].Substring(0, 8).Trim().TrimStart('[').TrimEnd(']'));
+			Name = head[0].Substring(8).Trim();
 			Directory = UnescapeStr(head[1].Trim());
 
 			if (!(Directory.StartsWith("\"") && Directory.EndsWith("\"")))
@@ -85,7 +87,9 @@ namespace StandaloneOrganizr
 
 		public string Save()
 		{
-			return Name + ": \"" + EscapeStr(Directory) + "\"" + Environment.NewLine + "\t" + string.Join(" ", Keywords);
+			string strPriority = (Priority < 0) ? string.Format("[-{0}]", Math.Abs(Priority)) : string.Format("[+{0}]", Priority);
+			strPriority = strPriority.PadRight(8, ' ');
+			return strPriority + Name + ": \"" + EscapeStr(Directory) + "\"" + Environment.NewLine + "\t" + string.Join(" ", Keywords);
 		}
 
 		public int GetSearchScore(string search)
@@ -186,8 +190,10 @@ namespace StandaloneOrganizr
 			return Name;
 		}
 
-		public void Start()
+		public void Start(ProgramDatabase d)
 		{
+			Priority++;
+
 			if (Executable != null)
 			{
 				Process.Start(new ProcessStartInfo
@@ -200,6 +206,8 @@ namespace StandaloneOrganizr
 			{
 				Process.Start("explorer.exe", GetAbsolutePath(Scanner.GetRootPath()));
 			}
+
+			d.Save();
 		}
 
 		public string GetAbsolutePath(string rootPath)

@@ -22,6 +22,7 @@ namespace StandaloneOrganizr
 			edName.Text = link.Name;
 			edDirectory.Text = link.Directory;
 			edKeywords.Text = string.Join(Environment.NewLine, link.Keywords);
+			lblPriority.Text = (link.Priority < 0) ? link.Priority.ToString() : String.Format("+{0}", link.Priority);
 		}
 
 		private void btnOK_Click(object sender, RoutedEventArgs e)

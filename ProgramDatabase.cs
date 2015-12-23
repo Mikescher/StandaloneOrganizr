@@ -51,7 +51,7 @@ namespace StandaloneOrganizr
 		{
 			var data = File.ReadAllText(path, Encoding.UTF8);
 
-			var lines = data.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+			var lines = data.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Where(p => ! string.IsNullOrWhiteSpace(p)).ToArray();
 
 			for (var i = 0; (i + 1) < lines.Length; i += 2)
 			{
@@ -61,7 +61,7 @@ namespace StandaloneOrganizr
 
 		private string SaveToString()
 		{
-			return string.Join(Environment.NewLine, programs.Select(p => p.Save()));
+			return string.Join(Environment.NewLine + Environment.NewLine, programs.Select(p => p.Save()));
 		}
 
 		private List<SearchResult> FindKeyword(string search)
@@ -157,16 +157,19 @@ namespace StandaloneOrganizr
 			if (searchterm.StartsWith(":"))
 				return FindCommand(searchterm.Substring(1))
 					.Where(p => p.Score > 0)
-					.OrderByDescending(p => p.Score);
+					.OrderByDescending(p => p.Score)
+					.ThenByDescending(p => p.Program.Priority);
 
 			if (searchterm.StartsWith("/") && searchterm.EndsWith("/") && searchterm.Length > 2)
 				return FindRegex(searchterm.Substring(1, searchterm.Length - 2))
 					.Where(p => p.Score > 0)
-					.OrderByDescending(p => p.Score);
+					.OrderByDescending(p => p.Score)
+					.ThenByDescending(p => p.Program.Priority);
 
 			return FindKeyword(searchterm)
 				.Where(p => p.Score > 0)
-				.OrderByDescending(p => p.Score);
+				.OrderByDescending(p => p.Score)
+				.ThenByDescending(p => p.Program.Priority);
 		}
 
 		public void Clear()
