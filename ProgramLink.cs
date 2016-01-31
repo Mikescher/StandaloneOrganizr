@@ -12,6 +12,7 @@ namespace StandaloneOrganizr
 {
 	public class ProgramLink
 	{
+		public Guid id;
 		public string Name = "";
 		public string Directory = "";
 		public int Priority;
@@ -51,19 +52,20 @@ namespace StandaloneOrganizr
 		public ProgramLink(FileSystemScanner scanner)
 		{
 			IsNew = true;
+			id = Guid.NewGuid();
 
 			Scanner = scanner;
 		}
 
-		public ProgramLink(FileSystemScanner scanner, string src, int line)
+		public ProgramLink(FileSystemScanner scanner, string src, int line, Dictionary<Guid, int> priorities)
 		{
-			Load(src, line);
+			Load(src, line, priorities);
 			IsNew = false;
 
 			Scanner = scanner;
 		}
 
-		private void Load(string data, int line)
+		private void Load(string data, int line, Dictionary<Guid, int> priorities)
 		{
 			var lines = data.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 			if (lines.Length != 2)
@@ -73,8 +75,13 @@ namespace StandaloneOrganizr
 			if (head.Length != 2)
 				throw new Exception("[ERR_2002] Invalid db file syntax in line " + line);
 
-			Priority = int.Parse(head[0].Substring(0, 8).Trim().TrimStart('[').TrimEnd(']'));
-			Name = head[0].Substring(8).Trim();
+			id = Guid.Parse(string.Join(string.Empty, head[1].ToCharArray().Reverse().Take(38).Reverse()));
+			head[1] = head[1].Substring(0, head[1].Length - 38).Trim();
+
+			Priority = 0;
+			if (priorities.ContainsKey(id)) Priority = priorities[id];
+
+			Name = head[0].Trim();
 			Directory = UnescapeStr(head[1].Trim());
 
 			if (!(Directory.StartsWith("\"") && Directory.EndsWith("\"")))
@@ -83,13 +90,18 @@ namespace StandaloneOrganizr
 			Directory = Directory.Substring(1, Directory.Length - 2);
 
 			Keywords = lines[1].Trim().Split(' ').Where(p => p.Trim() != "").Select(p => p.ToLower()).Distinct().ToList();
+
+			id = Guid.NewGuid();
 		}
 
-		public string Save()
+		public string Save_Database()
 		{
-			string strPriority = (Priority < 0) ? string.Format("[-{0}]", Math.Abs(Priority)) : string.Format("[+{0}]", Priority);
-			strPriority = strPriority.PadRight(8, ' ');
-			return strPriority + Name + ": \"" + EscapeStr(Directory) + "\"" + Environment.NewLine + "\t" + string.Join(" ", Keywords);
+			return string.Format("{0}: \"{1}\" ({3})\r\n\t{2}", Name, EscapeStr(Directory), string.Join(" ", Keywords), id.ToString("D").ToUpper());
+		}
+
+		public string Save_Priority()
+		{
+			return string.Format("{0} > {1}", id.ToString("B").ToUpper(), Priority);
 		}
 
 		public int GetSearchScore(string search)

@@ -10,22 +10,26 @@ namespace StandaloneOrganizr
 {
 	public class ProgramDatabase
 	{
-		private readonly string Filename;
+		private readonly string FilenameDB;
+		private readonly string FilenamePrio;
 		private readonly List<ProgramLink> programs = new List<ProgramLink>();
 
 		private bool isUpdating = false;
 
-		public ProgramDatabase(string file)
+		public ProgramDatabase(string fileDB, string filePrio)
 		{
-			Filename = file;
+			FilenameDB = fileDB;
+			FilenamePrio = filePrio;
 
 		}
 
 		public void TryLoad(FileSystemScanner scanner)
 		{
-			if (File.Exists(Filename))
+			if (!File.Exists(FilenamePrio)) File.WriteAllText(FilenamePrio, string.Empty);
+
+			if (File.Exists(FilenameDB))
 			{
-				Load(Filename, scanner);
+				Load(FilenameDB, FilenamePrio, scanner);
 			}
 		}
 
@@ -47,21 +51,31 @@ namespace StandaloneOrganizr
 			Save();
 		}
 
-		public void Load(string path, FileSystemScanner scanner)
+		public void Load(string pathDB, string pathPrio, FileSystemScanner scanner)
 		{
-			var data = File.ReadAllText(path, Encoding.UTF8);
+			var dataDB = File.ReadAllText(pathDB, Encoding.UTF8);
+			var dataPrio = File.ReadAllText(pathPrio, Encoding.UTF8);
 
-			var lines = data.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Where(p => ! string.IsNullOrWhiteSpace(p)).ToArray();
+			var priorities = dataPrio
+				.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+				.ToDictionary(p => Guid.Parse(p.Split('>')[0].Trim()), p => int.Parse(p.Split('>')[1].Trim()));
+
+			var lines = dataDB.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Where(p => ! string.IsNullOrWhiteSpace(p)).ToArray();
 
 			for (var i = 0; (i + 1) < lines.Length; i += 2)
 			{
-				programs.Add(new ProgramLink(scanner, lines[i] + Environment.NewLine + lines[i + 1], i));
+				programs.Add(new ProgramLink(scanner, lines[i] + Environment.NewLine + lines[i + 1], i, priorities));
 			}
 		}
 
-		private string SaveToString()
+		private string SaveToString_Database()
 		{
-			return string.Join(Environment.NewLine + Environment.NewLine, programs.Select(p => p.Save()));
+			return string.Join(Environment.NewLine + Environment.NewLine, programs.Select(p => p.Save_Database()));
+		}
+
+		private string SaveToString_Priorities()
+		{
+			return string.Join(Environment.NewLine, programs.Select(p => p.Save_Priority()));
 		}
 
 		private List<SearchResult> FindKeyword(string search)
@@ -125,13 +139,15 @@ namespace StandaloneOrganizr
 
 			try
 			{
-				File.WriteAllText(Filename, SaveToString(), Encoding.UTF8);
+				File.WriteAllText(FilenameDB, SaveToString_Database(), Encoding.UTF8);
+				File.WriteAllText(FilenamePrio, SaveToString_Priorities(), Encoding.UTF8);
 			}
 			catch (IOException)
 			{
 				Thread.Sleep(500);
 
-				File.WriteAllText(Filename, SaveToString(), Encoding.UTF8);
+				File.WriteAllText(FilenameDB, SaveToString_Database(), Encoding.UTF8);
+				File.WriteAllText(FilenamePrio, SaveToString_Priorities(), Encoding.UTF8);
 			}
 		}
 

@@ -15,9 +15,11 @@ namespace StandaloneOrganizr
 	{
 		private string RootPath;
 		private string DatabasePath;
+		private string PrioritiesPath;
 
-		private const string FN_SETTINGS = ".organizr";
-		private const string VERSION = "1.0.6";
+		private const string FN_SETTINGS_DB = ".organizr";
+		private const string FN_SETTINGS_PRIORITIES = ".organizr_ratings";
+		private const string VERSION = "1.0.7";
 		private const string ABOUT_URL = "http://www.mikescher.de";
 
 		private FileSystemScanner Scanner;
@@ -43,9 +45,10 @@ namespace StandaloneOrganizr
 		{
 			var args = Environment.GetCommandLineArgs();
 			RootPath = (args.Count() > 1) ? args[1] : Path.GetFullPath(".");
-			DatabasePath = Path.Combine(RootPath, FN_SETTINGS);
+			DatabasePath = Path.Combine(RootPath, FN_SETTINGS_DB);
+			PrioritiesPath = Path.Combine(RootPath, FN_SETTINGS_PRIORITIES);
 
-			Database = new ProgramDatabase(DatabasePath);
+			Database = new ProgramDatabase(DatabasePath, PrioritiesPath);
 			Scanner = new FileSystemScanner(RootPath);
 
 			Database.TryLoad(Scanner);
