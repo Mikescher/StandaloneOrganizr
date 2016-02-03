@@ -90,8 +90,6 @@ namespace StandaloneOrganizr
 			Directory = Directory.Substring(1, Directory.Length - 2);
 
 			Keywords = lines[1].Trim().Split(' ').Where(p => p.Trim() != "").Select(p => p.ToLower()).Distinct().ToList();
-
-			id = Guid.NewGuid();
 		}
 
 		public string Save_Database()
