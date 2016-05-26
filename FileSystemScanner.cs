@@ -100,7 +100,7 @@ namespace StandaloneOrganizr
 			}
 
 			var ex1 = executables.FirstOrDefault(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower());
-			var ex2 = executables.FirstOrDefault(f => (Path.GetFileNameWithoutExtension(f)?.Replace(" ", "") ?? "").ToLower() == prog.Name.ToLower());
+			var ex2 = executables.FirstOrDefault(f => (Path.GetFileNameWithoutExtension(f)?.Replace(" ", "") ?? "").ToLower() == prog.Name.ToLower().Replace(" ", ""));
 
 			return ex1 ?? ex2;
 		}
@@ -118,7 +118,7 @@ namespace StandaloneOrganizr
 			}
 
 			var ex1 = executables.FirstOrDefault(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower());
-			var ex2 = executables.FirstOrDefault(f => (Path.GetFileNameWithoutExtension(f)?.Replace(" ", "") ?? "").ToLower() == prog.Name.ToLower());
+			var ex2 = executables.FirstOrDefault(f => (Path.GetFileNameWithoutExtension(f)?.Replace(" ", "") ?? "").ToLower() == prog.Name.ToLower().Replace(" ", ""));
 
 			return ex1 ?? ex2;
 		}
