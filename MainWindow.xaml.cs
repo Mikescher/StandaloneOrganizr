@@ -13,13 +13,15 @@ namespace StandaloneOrganizr
 	/// </summary>
 	public partial class MainWindow
 	{
+		public static MainWindow Inst;
+
 		private string RootPath;
 		private string DatabasePath;
 		private string PrioritiesPath;
 
 		private const string FN_SETTINGS_DB = ".organizr";
 		private const string FN_SETTINGS_PRIORITIES = ".organizr_ratings";
-		private const string VERSION = "1.0.8";
+		private const string VERSION = "1.0.9";
 		private const string ABOUT_URL = "http://www.mikescher.de";
 
 		private FileSystemScanner Scanner;
@@ -39,6 +41,8 @@ namespace StandaloneOrganizr
 			{
 				MessageBox.Show(e.ToString(), e.GetType().FullName, MessageBoxButton.OK, MessageBoxImage.Error);
 			}
+
+			Inst = this;
 		}
 
 		private void Init()
@@ -236,8 +240,12 @@ namespace StandaloneOrganizr
 				Select(null);
 		}
 
+		private ProgramLink selectedProgram;
+
 		private void Select(ProgramLink prog)
 		{
+			selectedProgram = prog;
+
 			if (prog == null)
 			{
 				imgIcon.Source = null;
@@ -245,6 +253,14 @@ namespace StandaloneOrganizr
 			else
 			{
 				imgIcon.Source = prog.Icon;
+			}
+		}
+
+		public void UpdateIcon(ProgramLink source)
+		{
+			if (selectedProgram == source)
+			{
+				imgIcon.Source = source.Icon;
 			}
 		}
 	}

@@ -2,10 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Windows;
 using System.Windows.Media;
 
 namespace StandaloneOrganizr
@@ -27,7 +30,7 @@ namespace StandaloneOrganizr
 			{
 				if (cacheUpToDate) return cachedImage;
 
-				UpdateCache();
+				UpdateCache(true);
 
 				return cachedImage;
 			}
@@ -39,7 +42,7 @@ namespace StandaloneOrganizr
 			{
 				if (cacheUpToDate) return cachedExecutable;
 
-				UpdateCache();
+				UpdateCache(false);
 
 				return cachedExecutable;
 			}
@@ -225,31 +228,71 @@ namespace StandaloneOrganizr
 			return Path.Combine(rootPath, Directory);
 		}
 
-		private void UpdateCache()
+		private void UpdateCache(bool async)
 		{
+			if (async)
+			{
+				BackgroundQueue.Inst.QueueTask(UpdateCacheInternal);
+			}
+			else
+			{
+				UpdateCacheInternal();
+			}
+		}
+
+		private void UpdateCacheInternal()
+		{
+			string _cachedExecutable;
+			Icon _cachedImage;
+
 			var exec = Scanner.FindExecutable(this);
 			if (exec != null)
 			{
-				cachedExecutable = exec;
+				_cachedExecutable = exec;
 
 				try
 				{
 					var extr = new IconExtractor(exec);
 
-					cachedImage = extr.Count == 0 ? null : IconUtil.ToImageSource(extr.GetIcon(extr.Count - 1));
+					if (extr.Count == 0)
+					{
+						_cachedImage = null;
+					}
+					else
+					{
+						_cachedImage = extr.GetIcon(extr.Count - 1);
+					}
 				}
 				catch (Exception)
 				{
-					cachedImage = null;
+					_cachedImage = null;
 				}
 			}
 			else
 			{
-				cachedExecutable = null;
-				cachedImage = null;
+				_cachedExecutable = null;
+				_cachedImage = null;
 			}
 
-			cacheUpToDate = true;
+
+			if (Application.Current.Dispatcher.CheckAccess())
+			{
+				cachedExecutable = _cachedExecutable;
+				cachedImage = IconUtil.ToImageSource(_cachedImage);
+				cacheUpToDate = true;
+			}
+			else
+			{
+				Application.Current.Dispatcher.Invoke(() =>
+				{
+					cachedExecutable = _cachedExecutable;
+					cachedImage = IconUtil.ToImageSource(_cachedImage);
+					cacheUpToDate = true;
+
+					MainWindow.Inst?.UpdateIcon(this);
+				});
+			}
+
 		}
 	}
 }

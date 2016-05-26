@@ -57,6 +57,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BackgroundQueue.cs" />
     <Compile Include="FileSystemScanner.cs" />
     <Compile Include="IconUtils\IconExtractor.cs" />
     <Compile Include="IconUtils\IconUtil.cs" />
