@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows.Documents.Serialization;
 
 namespace StandaloneOrganizr
 {
@@ -100,12 +99,10 @@ namespace StandaloneOrganizr
 				return executables.First();
 			}
 
-			if (executables.Any(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower()))
-			{
-				return executables.First(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower());
-			}
+			var ex1 = executables.FirstOrDefault(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower());
+			var ex2 = executables.FirstOrDefault(f => (Path.GetFileNameWithoutExtension(f)?.Replace(" ", "") ?? "").ToLower() == prog.Name.ToLower());
 
-			return null;
+			return ex1 ?? ex2;
 		}
 
 		private string FindJarInFolder(string path, ProgramLink prog)
@@ -120,12 +117,10 @@ namespace StandaloneOrganizr
 				return executables.First();
 			}
 
-			if (executables.Any(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower()))
-			{
-				return executables.First(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower());
-			}
+			var ex1 = executables.FirstOrDefault(f => (Path.GetFileNameWithoutExtension(f) ?? "").ToLower() == prog.Name.ToLower());
+			var ex2 = executables.FirstOrDefault(f => (Path.GetFileNameWithoutExtension(f)?.Replace(" ", "") ?? "").ToLower() == prog.Name.ToLower());
 
-			return null;
+			return ex1 ?? ex2;
 		}
 
 		private string FindRedirectInFolder(string path, ProgramLink prog)

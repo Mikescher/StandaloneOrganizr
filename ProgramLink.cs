@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StandaloneOrganizr.IconUtils;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -6,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
-using StandaloneOrganizr.IconUtils;
 
 namespace StandaloneOrganizr
 {
@@ -25,11 +25,11 @@ namespace StandaloneOrganizr
 		{
 			get
 			{
-				if (CacheUpToDate) return CachedImage;
+				if (cacheUpToDate) return cachedImage;
 
 				UpdateCache();
 
-				return CachedImage;
+				return cachedImage;
 			}
 		}
 
@@ -37,17 +37,17 @@ namespace StandaloneOrganizr
 		{
 			get
 			{
-				if (CacheUpToDate) return CachedExecutable;
+				if (cacheUpToDate) return cachedExecutable;
 
 				UpdateCache();
 
-				return CachedExecutable;
+				return cachedExecutable;
 			}
 		}
 
-		private bool CacheUpToDate = false;
-		private ImageSource CachedImage = null;
-		private string CachedExecutable = null;
+		private bool cacheUpToDate = false;
+		private ImageSource cachedImage = null;
+		private string cachedExecutable = null;
 
 		public ProgramLink(FileSystemScanner scanner)
 		{
@@ -230,26 +230,26 @@ namespace StandaloneOrganizr
 			var exec = Scanner.FindExecutable(this);
 			if (exec != null)
 			{
-				CachedExecutable = exec;
+				cachedExecutable = exec;
 
 				try
 				{
 					var extr = new IconExtractor(exec);
 
-					CachedImage = extr.Count == 0 ? null : IconUtil.ToImageSource(extr.GetIcon(extr.Count - 1));
+					cachedImage = extr.Count == 0 ? null : IconUtil.ToImageSource(extr.GetIcon(extr.Count - 1));
 				}
 				catch (Exception)
 				{
-					CachedImage = null;
+					cachedImage = null;
 				}
 			}
 			else
 			{
-				CachedExecutable = null;
-				CachedImage = null;
+				cachedExecutable = null;
+				cachedImage = null;
 			}
 
-			CacheUpToDate = true;
+			cacheUpToDate = true;
 		}
 	}
 }
