@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StandaloneOrganizr.WPF;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -26,6 +27,13 @@ namespace StandaloneOrganizr
 
 		private FileSystemScanner Scanner;
 		private ProgramDatabase Database;
+
+		public ICommand TrayLeftClickCommand => new RelayCommand(TrayLeftClick);
+
+		private void TrayLeftClick()
+		{
+			throw new NotImplementedException();
+		}
 
 		public MainWindow()
 		{

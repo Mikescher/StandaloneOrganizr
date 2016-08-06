@@ -1,11 +1,13 @@
 ﻿<Window x:Class="StandaloneOrganizr.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="StandaloneOrganizr" 
-        Height="350" Width="525" 
-        WindowStartupLocation="CenterScreen" 
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:tb="http://www.hardcodet.net/taskbar"
+		Title="StandaloneOrganizr" 
+		Height="350" Width="525" 
+		WindowStartupLocation="CenterScreen" 
 		Icon="icon.ico" 
 		PreviewKeyDown="Window_PreviewKeyDown"
+		DataContext="{Binding RelativeSource={RelativeSource Self}}"
 		GotFocus="Something_GotFocus">
 
 	<Grid FocusManager.FocusedElement="{Binding ElementName=Searchbox}">
@@ -18,6 +20,8 @@
 			<RowDefinition Height="64"/>
 			<RowDefinition Height="1*"/>
 		</Grid.RowDefinitions>
+
+		<tb:TaskbarIcon Visibility="Visible" ToolTipText="Standalone Organizr" IconSource="icon.ico" NoLeftClickDelay="True" LeftClickCommand="{Binding TrayLeftClick}" />
 
 		<Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
 			<MenuItem Header="File">
@@ -40,10 +44,10 @@
 		</Menu>
 
 		<TextBox x:Name="Searchbox" 
-                 Grid.Row="1" Grid.Column="1"
-                 Margin="10,2" 
-                 TextChanged="searchbox_TextChanged" 
-                 FontSize="24" 
+				 Grid.Row="1" Grid.Column="1"
+				 Margin="10,2" 
+				 TextChanged="searchbox_TextChanged" 
+				 FontSize="24" 
 				 VerticalAlignment="Center" 
 				 GotFocus="Something_GotFocus" 
 				 PreviewKeyDown="Searchbox_PreviewKeyDown" />
@@ -51,17 +55,17 @@
 		<Image x:Name="imgIcon" Grid.Row="1" Grid.Column="0" RenderOptions.BitmapScalingMode="HighQuality" />
 		
 		<ScrollViewer 
-        	Grid.Row="2" Grid.Column="0" 
-        	Margin="2" VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2">
+			Grid.Row="2" Grid.Column="0" 
+			Margin="2" VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2">
 
 			<ListBox x:Name="Resultlist" 
-        		MouseDoubleClick="resultlist_MouseDoubleClick"
-        		FontSize="24" 
+				MouseDoubleClick="resultlist_MouseDoubleClick"
+				FontSize="24" 
 				Background="{x:Null}" 
 				BorderBrush="{x:Null}" 
 				KeyDown="Resultlist_KeyDown"
 				SelectionChanged="Resultlist_SelectionChanged"
-                MouseRightButtonUp="resultlist_MouseRightButtonUp" />
+				MouseRightButtonUp="resultlist_MouseRightButtonUp" />
 
 		</ScrollViewer>
 	</Grid>
