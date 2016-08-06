@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using StandaloneOrganizr.Scanner;
 
 namespace StandaloneOrganizr
 {
@@ -10,9 +11,9 @@ namespace StandaloneOrganizr
 	public partial class LinkEditWindow
 	{
 		private readonly ProgramLink link;
-		private readonly Func<int> update;
+		private readonly Action update;
 
-		public LinkEditWindow(Func<int> u, ProgramLink p)
+		public LinkEditWindow(Action u, ProgramLink p)
 		{
 			link = p;
 			update = u;

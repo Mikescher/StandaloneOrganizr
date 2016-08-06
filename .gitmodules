@@ -1,0 +1,3 @@
+[submodule "External/CSharpUtils"]
+	path = External/CSharpUtils
+	url = https://github.com/Mikescher/CSharpUtils.git

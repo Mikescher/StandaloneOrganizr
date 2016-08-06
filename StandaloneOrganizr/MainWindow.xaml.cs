@@ -1,275 +1,102 @@
-﻿using StandaloneOrganizr.WPF;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace StandaloneOrganizr
 {
-	/// <summary>
-	/// Interaction logic for MainWindow.xaml
-	/// </summary>
 	public partial class MainWindow
 	{
-		public static MainWindow Inst;
-
-		private string RootPath;
-		private string DatabasePath;
-		private string PrioritiesPath;
-
-		private const string FN_SETTINGS_DB = ".organizr";
-		private const string FN_SETTINGS_PRIORITIES = ".organizr_ratings";
-		private const string VERSION = "1.0.9";
-		private const string ABOUT_URL = "http://www.mikescher.de";
-
-		private FileSystemScanner Scanner;
-		private ProgramDatabase Database;
-
-		public ICommand TrayLeftClickCommand => new RelayCommand(TrayLeftClick);
-
-		private void TrayLeftClick()
-		{
-			throw new NotImplementedException();
-		}
+		private readonly MainWindowViewModel _viewModel = new MainWindowViewModel();
 
 		public MainWindow()
 		{
 			InitializeComponent();
-
-			try
-			{
-				Init();
-
-				Title = string.Format("StandaloneOrganizr v{0} ({1})", VERSION, Path.GetFileName(RootPath));
-			}
-			catch (Exception e)
-			{
-				MessageBox.Show(e.ToString(), e.GetType().FullName, MessageBoxButton.OK, MessageBoxImage.Error);
-			}
-
-			Inst = this;
 		}
 
-		private void Init()
+		public void Init()
 		{
-			var args = Environment.GetCommandLineArgs();
-			RootPath = (args.Count() > 1) ? args[1] : Path.GetFullPath(".");
-			DatabasePath = Path.Combine(RootPath, FN_SETTINGS_DB);
-			PrioritiesPath = Path.Combine(RootPath, FN_SETTINGS_PRIORITIES);
+			DataContext = _viewModel;
 
-			Database = new ProgramDatabase(DatabasePath, PrioritiesPath);
-			Scanner = new FileSystemScanner(RootPath);
+			_viewModel.FocusResults = FocusResults;
+			_viewModel.ShowWindow = ShowWindow;
+			_viewModel.HideWindow = HideWindow;
+		}
 
-			Database.TryLoad(Scanner);
+		private void FocusResults()
+		{
+			Resultlist.SelectedIndex = 0;
+			
+			var listBoxItem = (ListBoxItem)Resultlist
+				.ItemContainerGenerator
+				.ContainerFromItem(Resultlist.SelectedItem);
+			
+			listBoxItem.Focus();
+			Keyboard.Focus(listBoxItem);
+		}
 
-			List<ProgramLink> removed;
-			List<string> missing;
-
-			Scanner.Scan(Database, out removed, out missing);
-
-			foreach (var rem in removed)
+		private void Reshow()
+		{
+			if (App.FirstWindowShow)
 			{
-				var result = MessageBox.Show(
-					"Program " + rem.Name + " was removed.\r\nDo you want to delete it from the database ?", 
-					"Program removed", 
-					MessageBoxButton.YesNoCancel, 
-					MessageBoxImage.Question);
-
-				switch (result)
+				foreach (var rem in App.InitialScanRemoved)
 				{
-					case MessageBoxResult.Yes:
-						Database.Remove(rem);
-						break;
-					default:
-						break;
+					var result = MessageBox.Show(
+						"Program " + rem.Name + " was removed.\r\nDo you want to delete it from the database ?",
+						"Program removed",
+						MessageBoxButton.YesNoCancel,
+						MessageBoxImage.Question);
+
+					if (result == MessageBoxResult.Yes) App.Database.Remove(rem);
+				}
+
+				if (App.InitialScanMissing.Any())
+				{
+					_viewModel.SearchText = ":new";
+				}
+				else if (App.Database.List().Any(p => p.Keywords.Count == 0))
+				{
+					_viewModel.SearchText = ":empty";
 				}
 			}
 
-			if (missing.Any())
-			{
-				Searchbox.Text = ":new";
-			}
-			else if (Database.List().Any(p => p.Keywords.Count == 0))
-			{
-				Searchbox.Text = ":empty";
-			}
+			_viewModel.SearchText = string.Empty;
+			Searchbox.Focus();
+			Keyboard.Focus(Searchbox);
+			Activate();
+			new Thread(() => { Thread.Sleep(350); Application.Current.Dispatcher.Invoke(() => { Activate(); }); }).Start();
+
+			App.FirstWindowShow = false;
 		}
 
-		private void searchbox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+		protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
 		{
-			Resultlist.Items.Clear();
-
-			Database
-				.Find(Searchbox.Text)
-				.ToList()
-				.ForEach(p => Resultlist.Items.Add(p));
-
-			if (Resultlist.Items.Count > 0)
-				Select(((SearchResult)Resultlist.Items[0]).Program);
-			else
-				Select(null);
+			e.Cancel = true;
+			Hide();
 		}
 
-		private void resultlist_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		private void HideWindow()
 		{
-			var sel = Resultlist.SelectedItem as SearchResult;
-
-			if (sel == null)
-				return;
-
-			Start(sel.Program);
+			Hide();
 		}
 
-		private void resultlist_MouseRightButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+		public void ShowWindow()
 		{
-			var sel = Resultlist.SelectedItem as SearchResult;
+			Show();
+			
+			RecenterWindow();
 
-			if (sel == null)
-				return;
-
-			var window = new LinkEditWindow(() =>
-			{
-				Database.Save();
-				Resultlist.Items.Refresh();
-				return 0;
-			}, sel.Program);
-
-			window.ShowDialog();
+			Reshow();
 		}
 
-		private void MenuItemReset_Click(object sender, RoutedEventArgs e)
+		private void RecenterWindow()
 		{
-			Searchbox.Text = "";
+			var w = SystemParameters.PrimaryScreenWidth;
+			var h = SystemParameters.PrimaryScreenHeight;
 
-			Database.Clear();
-		}
-
-		private void MenuItemInsertAll_Click(object sender, RoutedEventArgs e)
-		{
-			Searchbox.Text = ":all";
-		}
-
-		private void MenuItemInsertEmpty_Click(object sender, RoutedEventArgs e)
-		{
-			Searchbox.Text = ":empty";
-		}
-
-		private void MenuItemInsertNew_Click(object sender, RoutedEventArgs e)
-		{
-			Searchbox.Text = ":new";
-		}
-
-		private void MenuItemInsertRegex_Click(object sender, RoutedEventArgs e)
-		{
-			Searchbox.Text = "/Regex/";
-		}
-
-		private void MenuItemInsertNoIcon_Click(object sender, RoutedEventArgs e)
-		{
-			Searchbox.Text = ":no-icon";
-		}
-
-		private void Something_GotFocus(object sender, RoutedEventArgs e)
-		{
-			Searchbox.SelectAll();
-		}
-
-		private void MenuItemAbout_Click(object sender, RoutedEventArgs e)
-		{
-			string text = string.Format("Standalone Organizr {0}// by Mike Schwörer (2014){0}@ {1}", Environment.NewLine, ABOUT_URL);
-			string caption = string.Format("Standalone Organizr v{0}", VERSION);
-
-			MessageBox.Show(text, caption);
-		}
-
-		private void MenuItemExit_Click(object sender, RoutedEventArgs e)
-		{
-			Close();
-		}
-
-		private void Start(ProgramLink r)
-		{
-			r.Start(Database);
-			Close();
-		}
-
-		private void Searchbox_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			if (e.Key == Key.Enter && Resultlist.Items.Count > 0)
-			{
-				Start(((SearchResult)Resultlist.Items[0]).Program);
-				e.Handled = true;
-				return;
-			}
-
-			if (e.Key == Key.Down && Resultlist.Items.Count > 0)
-			{
-				Resultlist.SelectedIndex = 0;
-
-				var listBoxItem = (ListBoxItem) Resultlist
-					.ItemContainerGenerator
-					.ContainerFromItem(Resultlist.SelectedItem);
-
-				listBoxItem.Focus();
-				Keyboard.Focus(listBoxItem);
-
-				e.Handled = true;
-				return;
-			}
-		}
-
-		private void Resultlist_KeyDown(object sender, KeyEventArgs e)
-		{
-			if (e.Key == Key.Enter && Resultlist.SelectedItem != null)
-			{
-				Start(((SearchResult)Resultlist.SelectedItem).Program);
-				return;
-			}
-		}
-
-		private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
-		{
-			if (e.Key == Key.Escape)
-			{
-				e.Handled = true;
-				Close();
-				return;
-			}
-		}
-
-		private void Resultlist_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			if (Resultlist.SelectedItem != null)
-				Select(((SearchResult) Resultlist.SelectedItem).Program);
-			else
-				Select(null);
-		}
-
-		private ProgramLink selectedProgram;
-
-		private void Select(ProgramLink prog)
-		{
-			selectedProgram = prog;
-
-			if (prog == null)
-			{
-				imgIcon.Source = null;
-			}
-			else
-			{
-				imgIcon.Source = prog.Icon;
-			}
-		}
-
-		public void UpdateIcon(ProgramLink source)
-		{
-			if (selectedProgram == source)
-			{
-				imgIcon.Source = source.Icon;
-			}
+			Left = (w - ActualWidth) / 2;
+			Top = (h - ActualHeight) / 2;
 		}
 	}
 }

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace StandaloneOrganizr
+namespace StandaloneOrganizr.Scanner
 {
 	public class FileSystemScanner
 	{

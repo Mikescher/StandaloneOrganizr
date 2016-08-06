@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace StandaloneOrganizr
+namespace StandaloneOrganizr.Scanner
 {
 	public class ProgramDatabase
 	{
@@ -20,7 +20,6 @@ namespace StandaloneOrganizr
 		{
 			FilenameDB = fileDB;
 			FilenamePrio = filePrio;
-
 		}
 
 		public void TryLoad(FileSystemScanner scanner)
@@ -192,6 +191,11 @@ namespace StandaloneOrganizr
 		{
 			programs.Clear();
 			Save();
+		}
+
+		public void Refresh()
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

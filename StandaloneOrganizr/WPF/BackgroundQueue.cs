@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StandaloneOrganizr
+namespace StandaloneOrganizr.WPF
 {
 	public class BackgroundQueue
 	{
