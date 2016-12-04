@@ -64,6 +64,7 @@ namespace StandaloneOrganizr
 			_viewModel.SearchText = string.Empty;
 			Searchbox.Focus();
 			Keyboard.Focus(Searchbox);
+			_viewModel.OnShow();
 			Activate();
 			new Thread(() => { Thread.Sleep(350); Application.Current.Dispatcher.Invoke(() => { Activate(); }); }).Start();
 

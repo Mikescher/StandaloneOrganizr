@@ -1,4 +1,5 @@
-﻿using MSHC.MVVM;
+﻿using MSHC.Helper;
+using MSHC.MVVM;
 using StandaloneOrganizr.Scanner;
 using System;
 using System.Collections.ObjectModel;
@@ -19,6 +20,7 @@ namespace StandaloneOrganizr
 		public ICommand ResultsKeyDownCommand => new RelayCommand<KeyEventArgs>(ResultsKeyDown);
 		public ICommand GlobalKeyDownCommand => new RelayCommand<KeyEventArgs>(GlobalKeyDown);
 		public ICommand EditCommand => new RelayCommand(Edit);
+		public ICommand OpenFolderCommand => new RelayCommand<RoutedEventArgs>(OpenFolder);
 
 		public ICommand ResetCommand => new RelayCommand(ResetDatabase);
 		public ICommand HideCommand  => new RelayCommand(Hide);
@@ -86,6 +88,16 @@ namespace StandaloneOrganizr
 			}
 		}
 
+		private void OpenFolder(RoutedEventArgs e)
+		{
+			if (SelectedResult != null)
+			{
+				ProcessHelper.ProcExecute("explorer.exe", Path.GetDirectoryName(SelectedResult.Program.Executable));
+				e.Handled = true;
+				return;
+			}
+		}
+
 		private void ResultsKeyDown(KeyEventArgs e)
 		{
 			if (e.Key == Key.Enter && SelectedResult != null)
@@ -93,6 +105,12 @@ namespace StandaloneOrganizr
 				Execute();
 				HideWindow();
 				e.Handled = true;
+				return;
+			}
+
+			if (e.Key == Key.O)
+			{
+				OpenFolder(e);
 				return;
 			}
 		}
@@ -105,7 +123,7 @@ namespace StandaloneOrganizr
 				e.Handled = true;
 				return;
 			}
-			else
+
 			if (e.Key == Key.F5)
 			{
 				SearchText = "";
@@ -151,6 +169,11 @@ namespace StandaloneOrganizr
 			string caption = string.Format("Standalone Organizr v{0}", App.VERSION);
 
 			MessageBox.Show(text, caption);
+		}
+
+		public void OnShow()
+		{
+			OnPropertyChanged(nameof(SelectedResult));
 		}
 	}
 }

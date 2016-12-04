@@ -49,6 +49,18 @@ namespace StandaloneOrganizr.Scanner
 			}
 		}
 
+		public string ExecutableCached
+		{
+			get
+			{
+				if (cacheUpToDate) return cachedExecutable;
+
+				UpdateCache(true);
+
+				return cachedExecutable;
+			}
+		}
+
 		private bool cacheUpToDate = false;
 		private ImageSource cachedImage = null;
 		private string cachedExecutable = null;
